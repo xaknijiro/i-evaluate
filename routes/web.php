@@ -1,9 +1,15 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\EvaluationFormController;
 use App\Http\Controllers\EvaluationFormCriterionController;
 use App\Http\Controllers\StaticPageController;
 use Illuminate\Support\Facades\Route;
+
+/**
+ * Auth - Login/out
+ */
+Route::get('/login', [AuthController::class, 'login']);
 
 Route::get('/', [StaticPageController::class, 'evaluate']);
 

@@ -1,1 +1,1 @@
-CREATE DATABASE IF NOT EXISTS i-evaluate_db;
+CREATE DATABASE IF NOT EXISTS i_evaluate_db;

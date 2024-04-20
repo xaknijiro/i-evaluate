@@ -1,5 +1,5 @@
 import { router } from "@inertiajs/react";
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, ButtonGroup, Divider, Grid, IconButton, Stack, TextField, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, ButtonGroup, Chip, Divider, Grid, IconButton, Stack, TextField, Typography } from "@mui/material";
 import MainLayout from "../../MainLayout";
 import { AddTwoTone, DeleteForeverTwoTone, RemoveTwoTone } from "@mui/icons-material";
 import React from "react";
@@ -68,43 +68,42 @@ const Show = ({ errors, evaluationForm }) => {
                         <Typography sx={{ flex: 1 }} variant="h5">
                             {criterion.description}
                         </Typography>
-                        <ButtonGroup>
+                        <Chip label={`${criterion.weight * 100}%`} />
+                        {!!!evaluationForm.published && <ButtonGroup>
                             <IconButton onClick={deleteCriterion(criterion.id)}>
                                 <DeleteForeverTwoTone />
                             </IconButton>
-                        </ButtonGroup>
+                        </ButtonGroup>}
                     </AccordionSummary>
                     <AccordionDetails>
                         <Stack spacing={2}>
-                            {criteriaIndicators[`criterion_${criterion.id}`].map((description, index) => (
-                                <>
-                                    <Box>
-                                        <Grid container>
-                                            <Grid item md={11}>
-                                                <TextField
-                                                    defaultValue={description}
-                                                    onChange={handleChangeCriterionIndicator(criterion.id, index)}
-                                                    rows={2}
-                                                    value={description}
-                                                    variant="outlined"
-                                                    multiline
-                                                    fullWidth />
-                                            </Grid>
-                                            <Grid item md={1}>
-                                                <ButtonGroup variant="text">
-                                                    <IconButton>
-                                                        <AddTwoTone onClick={addCriterionIndicator(criterion.id, index)} />
-                                                    </IconButton>
-                                                    {(index > 0) && <IconButton>
-                                                        <RemoveTwoTone onClick={deleteCriterionIndicator(criterion.id, index)} />
-                                                    </IconButton>}
-                                                </ButtonGroup>
-                                            </Grid>
-                                            <Divider />
-                                        </Grid>
-                                    </Box>
-                                </>
-                            ))}
+                            {criteriaIndicators[`criterion_${criterion.id}`].map((description, index) => (!!evaluationForm.published ? <Typography>
+                                {description}
+                            </Typography> : <Box>
+                                <Grid container>
+                                    <Grid item md={11}>
+                                        <TextField
+                                            defaultValue={description}
+                                            onChange={handleChangeCriterionIndicator(criterion.id, index)}
+                                            rows={2}
+                                            value={description}
+                                            variant="outlined"
+                                            multiline
+                                            fullWidth />
+                                    </Grid>
+                                    <Grid item md={1}>
+                                        <ButtonGroup variant="text">
+                                            <IconButton>
+                                                <AddTwoTone onClick={addCriterionIndicator(criterion.id, index)} />
+                                            </IconButton>
+                                            {(index > 0) && <IconButton>
+                                                <RemoveTwoTone onClick={deleteCriterionIndicator(criterion.id, index)} />
+                                            </IconButton>}
+                                        </ButtonGroup>
+                                    </Grid>
+                                    <Divider />
+                                </Grid>
+                            </Box>))}
                         </Stack>
                     </AccordionDetails>
                 </Accordion>
