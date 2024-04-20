@@ -1,5 +1,5 @@
 import { router } from "@inertiajs/react";
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, ButtonGroup, Chip, Divider, Grid, IconButton, Stack, TextField, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, ButtonGroup, Chip, Divider, Grid, IconButton, Rating, Stack, TextField, Typography } from "@mui/material";
 import MainLayout from "../../MainLayout";
 import { AddTwoTone, DeleteForeverTwoTone, RemoveTwoTone } from "@mui/icons-material";
 import React from "react";
@@ -77,9 +77,13 @@ const Show = ({ errors, evaluationForm }) => {
                     </AccordionSummary>
                     <AccordionDetails>
                         <Stack spacing={2}>
-                            {criteriaIndicators[`criterion_${criterion.id}`].map((description, index) => (!!evaluationForm.published ? <Typography>
-                                {description}
-                            </Typography> : <Box>
+                            {criteriaIndicators[`criterion_${criterion.id}`].map((description, index) => (!!evaluationForm.published ? <Box>
+                                <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                                    <Typography>{index + 1}</Typography>
+                                    <Typography>{description}</Typography>
+                                </Stack>
+                                <Rating sx={{ ml: 3 }}/>
+                            </Box> : <Box>
                                 <Grid container>
                                     <Grid item md={11}>
                                         <TextField
