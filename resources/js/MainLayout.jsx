@@ -1,21 +1,32 @@
-import { Head, router } from "@inertiajs/react";
-import { AssessmentTwoTone, CalendarMonthTwoTone, DashboardTwoTone, FolderTwoTone, InfoTwoTone, Menu, SettingsTwoTone } from "@mui/icons-material";
+import { Head, router, usePage } from "@inertiajs/react";
+import { AccountCircle, AssessmentTwoTone, CalendarMonthTwoTone, DashboardTwoTone, FolderTwoTone, InfoTwoTone, Logout, Menu, Password, SettingsTwoTone } from "@mui/icons-material";
 import { AppBar, Avatar, Box, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Toolbar, Typography } from "@mui/material";
 import React from 'react';
 
 const MainLayout = ({ children, title }) => {
-    const [open, setOpen] = React.useState(false);
+    const { auth } = usePage().props;
+    const { email, name } = auth;
+    const [openAppDrawer, setOpenAppDrawer] = React.useState(false);
+    const [openUserDrawer, setOpenUserDrawer] = React.useState(false);
 
-    const toggleDrawer = (newOpen) => () => {
-        setOpen(newOpen);
+    const toggleAppDrawer = (newOpenAppDrawer) => () => {
+        setOpenAppDrawer(newOpenAppDrawer);
+    };
+
+    const toggleUserDrawer = (newOpenUserDrawer) => () => {
+        setOpenUserDrawer(newOpenUserDrawer);
     };
 
     const routeToPage = (url) => () => {
         router.get(`/${url ?? ''}`);
     };
 
-    const MainMenu = (
-        <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
+    const logout = () => {
+        router.post('/logout');
+    };
+
+    const AppMenu = (
+        <Box sx={{ width: 250 }} role="presentation" onClick={toggleAppDrawer(false)}>
             <List>
                 <ListItem disablePadding>
                     <ListItemButton onClick={routeToPage()}>
@@ -29,7 +40,7 @@ const MainLayout = ({ children, title }) => {
             <Divider />
             <List>
                 <ListItem disablePadding>
-                    <ListItemButton>
+                    <ListItemButton onClick={routeToPage('evaluation-schedules')}>
                         <ListItemIcon>
                             <CalendarMonthTwoTone />
                         </ListItemIcon>
@@ -75,6 +86,42 @@ const MainLayout = ({ children, title }) => {
         </Box>
     );
 
+    const UserMenu = (
+        <Box sx={{ width: 250 }} role="presentation" onClick={toggleUserDrawer(false)}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                }}
+            >
+                <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                    <AccountCircle />
+                </Avatar>
+                <Typography variant="h5">{name}</Typography>
+                <Typography variant="caption">{email}</Typography>
+            </Box>
+            <List>
+                <ListItem disablePadding>
+                    <ListItemButton onClick={routeToPage()}>
+                        <ListItemIcon>
+                            <Password />
+                        </ListItemIcon>
+                        <ListItemText primary="Change Password" />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton onClick={logout}>
+                        <ListItemIcon>
+                            <Logout />
+                        </ListItemIcon>
+                        <ListItemText primary="Logout" />
+                    </ListItemButton>
+                </ListItem>
+            </List>
+        </Box>
+    );
+
     return <>
         <Head>
             <title>{title}</title>
@@ -90,22 +137,37 @@ const MainLayout = ({ children, title }) => {
                             color="inherit"
                             aria-label="menu"
                             sx={{ mr: 2 }}
-                            onClick={toggleDrawer(true)}
+                            onClick={toggleAppDrawer(true)}
                         >
                             <Menu />
                         </IconButton>
                         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                             I-Evaluate | {title}
                         </Typography>
-                        <Avatar>DM</Avatar>
+                        <IconButton
+                            size="large"
+                            edge="start"
+                            color="inherit"
+                            aria-label="menu"
+                            sx={{ mr: 2 }}
+                            onClick={toggleUserDrawer(true)}
+                        >
+                            <AccountCircle />
+                        </IconButton>
                     </Toolbar>
                 </AppBar>
                 <Toolbar />
             </React.Fragment>
         </Box>
-        <Drawer open={open} onClose={toggleDrawer(false)}>
-            {MainMenu}
+
+        <Drawer anchor="left" open={openAppDrawer} onClose={toggleAppDrawer(false)}>
+            {AppMenu}
         </Drawer>
+
+        <Drawer anchor="right" open={openUserDrawer} onClose={toggleUserDrawer(false)}>
+            {UserMenu}
+        </Drawer>
+
         <Paper
             elevation={3}
             maxWidth={false}

@@ -6,7 +6,6 @@ use App\Http\Requests\StoreCriterionRequest;
 use App\Http\Requests\UpdateCriterionRequest;
 use App\Models\Criterion;
 use App\Models\EvaluationForm;
-use Illuminate\Support\Facades\Log;
 
 class EvaluationFormCriterionController extends Controller
 {
@@ -31,8 +30,16 @@ class EvaluationFormCriterionController extends Controller
      */
     public function store(StoreCriterionRequest $request, EvaluationForm $evaluationForm)
     {
-        $criterion = $evaluationForm->criteria()->create($request->only(['description', 'weight']));
-        $criterion->indicators()->createMany($request->input('indicators'));
+        $criterionData = $request->only(['description', 'weight']);
+        $criterionData['weight'] = $criterion['weight'] ?? 0;
+        $criterion = $evaluationForm->criteria()->create($criterionData);
+        if ($request->has('indicators')) {
+            $criterion->indicators()->createMany($request->input('indicators'));
+        } else {
+            $criterion->indicators()->create([
+                'description' => '',
+            ]);
+        }
     }
 
     /**
@@ -58,14 +65,21 @@ class EvaluationFormCriterionController extends Controller
     {
         if (
             $evaluationForm->published ||
-            !$evaluationForm->criteria->pluck('id')->contains($criterion->id)
+            ! $evaluationForm->criteria->pluck('id')->contains($criterion->id)
         ) {
             abort(400);
         }
-        
+
         $criterion->update($request->only('description', 'weight'));
         $criterion->indicators()->delete();
-        $criterion->indicators()->createMany($request->input('indicators'));
+
+        $indicators = collect($request->input('indicators'))
+            ->whereNotNull('description')
+            ->where('description', '<>', '')
+            ->toArray();
+        if ($indicators) {
+            $criterion->indicators()->createMany($indicators);
+        }
     }
 
     /**
@@ -75,7 +89,7 @@ class EvaluationFormCriterionController extends Controller
     {
         if (
             $evaluationForm->published ||
-            !$evaluationForm->criteria->pluck('id')->contains($criterion->id)
+            ! $evaluationForm->criteria->pluck('id')->contains($criterion->id)
         ) {
             abort(400);
         }

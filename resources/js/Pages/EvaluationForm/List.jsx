@@ -1,10 +1,17 @@
 import { router } from "@inertiajs/react";
 import { DataGrid } from "@mui/x-data-grid";
 import MainLayout from "../../MainLayout";
-import { Button, ButtonGroup } from "@mui/material";
-import { ArchiveTwoTone, CheckTwoTone, DeleteTwoTone, FileOpenTwoTone } from "@mui/icons-material";
+import { Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogTitle, Fab, TextField } from "@mui/material";
+import { Add, ArchiveTwoTone, CheckTwoTone, DeleteTwoTone, FileOpenTwoTone } from "@mui/icons-material";
+import React from 'react';
 
 const List = ({ evaluationForms }) => {
+    const [open, setOpen] = React.useState(false);
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
     const showEvaluationForm = (id) => () => {
         router.get(`evaluation-forms/${id}`);
     };
@@ -57,10 +64,41 @@ const List = ({ evaluationForms }) => {
 
     return (
         <>
+            <Fab onClick={() => { setOpen(true) }} sx={{ mb: 2 }}>
+                <Add />
+            </Fab>
             <DataGrid
                 columns={columns}
                 rows={evaluationForms}
                 autoHeight></DataGrid>
+
+            <Dialog
+                open={open}
+                onClose={handleClose}
+                PaperProps={{
+                    component: 'form',
+                    onSubmit: (event) => {
+                        event.preventDefault();
+                        const formData = new FormData(event.currentTarget);
+                        const formJson = Object.fromEntries(formData.entries());
+                        router.post(`/evaluation-forms`, formJson);
+                        handleClose();
+                    }
+                }}>
+                <DialogTitle>New Evaluation Form</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        required
+                        label="Title"
+                        margin="dense"
+                        name="title" />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button type="submit">Create</Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
 };

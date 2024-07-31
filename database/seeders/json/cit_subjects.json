@@ -1,0 +1,12 @@
+{
+    "subjects": [
+        {
+            "title": "Programming 1",
+            "code": "P1"
+        },
+        {
+            "title": "Programming 2",
+            "code": "P2"
+        }
+    ]
+}

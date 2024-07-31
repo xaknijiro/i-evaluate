@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class UpdateCriterionRequest extends FormRequest
 {
@@ -22,9 +23,9 @@ class UpdateCriterionRequest extends FormRequest
     public function rules(): array
     {
         $status = request()->input('status', 'save');
-        
+
         $rules = [
-            'description' => '',
+            'description' => 'sometimes|required',
             'weight' => '',
             'indicators.*.description' => '',
         ];
@@ -36,5 +37,19 @@ class UpdateCriterionRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    public function after(): array
+    {
+        return [
+            function (Validator $validator) {
+                if ($validator->failed()) {
+                    $validator->errors()->add(
+                        'criterion_id',
+                        $this->criterion->id,
+                    );
+                }
+            },
+        ];
     }
 }

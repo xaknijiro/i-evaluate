@@ -12,14 +12,15 @@ import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { ErrorSharp } from '@mui/icons-material';
 
 function Copyright(props) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
       <Link color="inherit" href="#">
-        Your Website
+        I-Evaluate
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -31,16 +32,17 @@ function Copyright(props) {
 
 const defaultTheme = createTheme();
 
-const Login = () => {
+const Login = ({ errors }) => {
   const { appName } = usePage().props;
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
+    const requestPayload = {
       email: data.get('email'),
       password: data.get('password'),
-    });
+    };
+    router.post('/login', requestPayload);
   };
 
   return (
@@ -54,11 +56,11 @@ const Login = () => {
           sm={4}
           md={7}
           sx={{
-            backgroundImage: 'url(https://source.unsplash.com/random?wallpapers)',
+            backgroundImage: 'url(images/logo-kcp-emblem.png)',
             backgroundRepeat: 'no-repeat',
             backgroundColor: (t) =>
               t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
-            backgroundSize: 'cover',
+            backgroundSize: 'contain',
             backgroundPosition: 'center',
           }}
         />
@@ -88,6 +90,8 @@ const Login = () => {
                 name="email"
                 autoComplete="email"
                 autoFocus
+                error={!!errors.email}
+                helperText={!!errors.email && errors.email}
               />
               <TextField
                 margin="normal"
@@ -98,10 +102,6 @@ const Login = () => {
                 type="password"
                 id="password"
                 autoComplete="current-password"
-              />
-              <FormControlLabel
-                control={<Checkbox value="remember" color="primary" />}
-                label="Remember me"
               />
               <Button
                 type="submit"
@@ -115,11 +115,6 @@ const Login = () => {
                 <Grid item xs>
                   <Link href="#" variant="body2">
                     Forgot password?
-                  </Link>
-                </Grid>
-                <Grid item>
-                  <Link href="#" variant="body2">
-                    {"Don't have an account? Sign Up"}
                   </Link>
                 </Grid>
               </Grid>

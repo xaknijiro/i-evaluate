@@ -1,0 +1,222 @@
+{
+    "evaluation_forms": [
+        {
+            "title": "Peer Evaluation",
+            "description": "Please rate your peer using the following scale as the basis for your evaluation.",
+            "likert_scale_code": "5-point-scale",
+            "criteria": [
+                {
+                    "description": "Attendance and Punctuality",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Begins work on time"
+                        },
+                        {
+                            "description": "Keeps absences within guidelines"
+                        },
+                        {
+                            "description": "Use time effectively"
+                        }
+                    ]
+                },
+                {
+                    "description": "Quality and Quantity of Work",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Able to produce accurate and neat work"
+                        },
+                        {
+                            "description": "Able to complete tasks correctly"
+                        },
+                        {
+                            "description": "Able to submit tasks on time"
+                        }
+                    ]
+                },
+                {
+                    "description": "Work Habits/Initiative",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Attends work schedule regularly"
+                        },
+                        {
+                            "description": "Able to comply and complete work/assigned task"
+                        },
+                        {
+                            "description": "Volunteers readily when presence is needed"
+                        },
+                        {
+                            "description": "Asks for help when needed"
+                        }
+                    ]
+                },
+                {
+                    "description": "Personal Relation/Dependability/Deportment",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Able to get along with fellow employees"
+                        },
+                        {
+                            "description": "Able to demonstrate willingness to help/assist/support co-workers"
+                        },
+                        {
+                            "description": "Displays a positive outlook and pleasant behavior"
+                        },
+                        {
+                            "description": "Responds to requests for service and assistance"
+                        },
+                        {
+                            "description": "Takes responsibility for own actions"
+                        },
+                        {
+                            "description": "Observes good grooming"
+                        },
+                        {
+                            "description": "Wears uniform/appropriate clothes"
+                        }
+                    ]
+                },
+                {
+                    "description": "Communications",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Exhibits good listening and comprehension"
+                        },
+                        {
+                            "description": "Selects appropriate communication method"
+                        },
+                        {
+                            "description": "Uses selected communication method effectively"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Student to Teacher Evaluation",
+            "description": "Please rate your teacher using the following scale as the basis for your evaluation.",
+            "likert_scale_code": "5-point-scale",
+            "criteria": [
+                {
+                    "description": "Classroom Management",
+                    "weight": 0.25,
+                    "indicators": [
+                        {
+                            "description": "The teacher is generally well-organized and prepared for class"
+                        },
+                        {
+                            "description": "The teacher maintains enough classroom discipline"
+                        },
+                        {
+                            "description": "Class time is used in an efficient and productive manner"
+                        },
+                        {
+                            "description": "Returns graded quizzes, examinations, reports, etc."
+                        },
+                        {
+                            "description": "Requires students to observe proper attire"
+                        },
+                        {
+                            "description": "Attends class regularly and arrives/dismisses class on time"
+                        }
+                    ]
+                },
+                {
+                    "description": "Instruction/Curriculum",
+                    "weight": 0.25,
+                    "indicators": [
+                        {
+                            "description": "States clearly the objectives of the lesson"
+                        },
+                        {
+                            "description": "Makes use of various teaching aids"
+                        },
+                        {
+                            "description": "Presents lessons using the appropriate methods/technique to ensure students’ understanding"
+                        },
+                        {
+                            "description": "Gives the right number of assignments, tests, and quizzes to fairly evaluate the performance"
+                        },
+                        {
+                            "description": "Has good command of the language instruction"
+                        },
+                        {
+                            "description": "Has good diction, clear, and modulated voice"
+                        },
+                        {
+                            "description": "Identifies and helps students who encounter difficulties in learning"
+                        },
+                        {
+                            "description": "Welcomes questions, stimulates interest, thinking, and discussion in class"
+                        },
+                        {
+                            "description": "Offers encouragement and positive reinforcement, as well as constructive criticism"
+                        },
+                        {
+                            "description": "Is available to students outside class time for tutoring, review work, or to answer questions"
+                        },
+                        {
+                            "description": "Is fair and impartial to all students; no favoritism"
+                        }
+                    ]
+                },
+                {
+                    "description": "Knowledge of the Subject Matter",
+                    "weight": 0.25,
+                    "indicators": [
+                        {
+                            "description": "Knows the subject very well"
+                        },
+                        {
+                            "description": "Relates present topics to the previous lessons"
+                        },
+                        {
+                            "description": "Easily answers students’ questions"
+                        },
+                        {
+                            "description": "Does not read straight from the book or notes"
+                        },
+                        {
+                            "description": "Uses clear and concrete examples"
+                        },
+                        {
+                            "description": "Relates subjects to other fields and life situations"
+                        }
+                    ]
+                },
+                {
+                    "description": "Personal Qualities",
+                    "weight": 0.25,
+                    "indicators": [
+                        {
+                            "description": "Maintains professional appearance and follows the School Dress Code"
+                        },
+                        {
+                            "description": "She/He is approachable"
+                        },
+                        {
+                            "description": "She/He demonstrates interest in and concern for the students"
+                        },
+                        {
+                            "description": "Does not embarrass students in class"
+                        },
+                        {
+                            "description": "Admits mistakes and shows humility"
+                        },
+                        {
+                            "description": "Does not take credit for other’s success"
+                        },
+                        {
+                            "description": "Shows respect and consideration of students’ opinions and suggestions"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

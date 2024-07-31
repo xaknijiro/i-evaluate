@@ -1,88 +1,105 @@
-import MainLayout from "../../MainLayout";
-import { Box, Button, Step, StepContent, StepLabel, Stepper, Typography } from "@mui/material";
-import React from "react";
+import * as React from 'react';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import { PlayArrow } from '@mui/icons-material';
+import { Head, router } from '@inertiajs/react';
+import { Alert, Snackbar } from '@mui/material';
 
-const Index = () => {
-
-    const steps = [
-        {
-            label: 'Select campaign settings',
-            description: `For each ad campaign that you create, you can control how much
-                    you're willing to spend on clicks and conversions, which networks
-                    and geographical locations you want your ads to show on, and more.`,
-        },
-        {
-            label: 'Create an ad group',
-            description:
-                'An ad group contains one or more ads which target a shared set of keywords.',
-        },
-        {
-            label: 'Create an ad',
-            description: `Try out different ad text to see what brings in the most customers,
-                    and learn how to enhance your ads using features like ad extensions.
-                    If you run into any problems with your ads, find out how to tell if
-                    they're running and how to resolve approval issues.`,
-        },
-    ];
-
-
-    const [activeStep, setActiveStep] = React.useState(0);
-
-    const handleNext = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+export default function Index({ errors, flashMessage }) {
+    const [openFlashMessage, setOpenFlashMessage] = React.useState(true);
+    const handleCloseFlashMessage = (_event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpenFlashMessage(false);
     };
 
-    const handleBack = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        router.post('/evaluation', {
+            evaluation_code: data.get('evaluation_code'),
+            evaluator_email: data.get('evaluator_email'),
+        }, {
+            preserveScroll: true,
+            onSuccess: ({ props }) => setOpenFlashMessage(!!props.flashMessage),
+        });
     };
-
-    const handleReset = () => {
-        setActiveStep(0);
-    };
-
 
     return (
-        <>
-            <Stepper activeStep={activeStep} orientation="vertical">
-                {steps.map((step, index) => (
-                    <Step key={step.label}>
-                        <StepLabel
-                            optional={
-                                index === 2 ? (
-                                    <Typography variant="caption">Last step</Typography>
-                                ) : null
-                            }
+        <Container component="main" maxWidth="xs">
+            <Head>
+                <title>Start</title>
+            </Head>
+            <Box
+                sx={{
+                    marginTop: 8,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                }}
+            >
+                <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                    <PlayArrow />
+                </Avatar>
+                <Typography component="h1" variant="h5">
+                    I-Evaluate
+                </Typography>
+                <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="evaluation_code"
+                        label="Evaluation Code"
+                        name="evaluation_code"
+                        autoComplete="off"
+                        autoFocus
+                        error={!!errors.evaluation_code}
+                        helperText={errors.evaluation_code}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="evaluator_email"
+                        label="Evaluator Email"
+                        name="evaluator_email"
+                        autoComplete="off"
+                        error={!!errors.evaluator_email}
+                        helperText={errors.evaluator_email}
+                    />
+
+                    <Snackbar
+                        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+                        autoHideDuration={5000}
+                        onClose={handleCloseFlashMessage}
+                        open={!!flashMessage && openFlashMessage}
+                    >
+                        <Alert
+                            onClose={handleCloseFlashMessage}
+                            severity={flashMessage?.severity}
+                            sx={{ width: '100%' }}
+                            variant="filled"
                         >
-                            {step.label}
-                        </StepLabel>
-                        <StepContent>
-                            <Typography>{step.description}</Typography>
-                            <Box sx={{ mb: 2 }}>
-                                <div>
-                                    <Button
-                                        variant="contained"
-                                        onClick={handleNext}
-                                        sx={{ mt: 1, mr: 1 }}
-                                    >
-                                        {index === steps.length - 1 ? 'Finish' : 'Continue'}
-                                    </Button>
-                                    <Button
-                                        disabled={index === 0}
-                                        onClick={handleBack}
-                                        sx={{ mt: 1, mr: 1 }}
-                                    >
-                                        Back
-                                    </Button>
-                                </div>
-                            </Box>
-                        </StepContent>
-                    </Step>
-                ))}
-            </Stepper>
-        </>
+                            {flashMessage?.value}
+                        </Alert>
+                    </Snackbar>
+
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        sx={{ mt: 3, mb: 2 }}
+                    >
+                        Send Passcode
+                    </Button>
+                </Box>
+            </Box>
+        </Container>
     );
-};
-
-Index.layout = page => <MainLayout children={page} title="Evaluation Forms" />;
-
-export default Index;
+}

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Department;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,11 +12,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('evaluation_forms', function (Blueprint $table) {
+        Schema::create('courses', function (Blueprint $table) {
             $table->id();
+            $table->foreignIdFor(Department::class)->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->string('title');
-            $table->text('description');
-            $table->boolean('published');
+            $table->string('code');
+            $table->unique(['department_id', 'code']);
             $table->timestamps();
         });
     }
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('evaluation_forms');
+        Schema::dropIfExists('courses');
     }
 };

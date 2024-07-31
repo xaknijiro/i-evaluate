@@ -1,0 +1,12 @@
+{
+    "courses": [
+        {
+            "title": "Bachelor of Science in Elementary Education",
+            "code": "BSEE"
+        },
+        {
+            "title": "Bachelor of Science in Secondary Education",
+            "code": "BSSE"
+        }
+    ]
+}

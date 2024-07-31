@@ -1,0 +1,16 @@
+{
+    "departments": [
+        {
+            "title": "College of Criminal Justice Education",
+            "code": "CCJE"
+        },
+        {
+            "title": "College of Information Technology",
+            "code": "CIT"           
+        },
+        {
+            "title": "College of Teacher Education",
+            "code": "CTE"
+        }
+    ]
+}

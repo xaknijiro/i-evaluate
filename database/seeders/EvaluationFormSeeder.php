@@ -4,7 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Criterion;
 use App\Models\EvaluationForm;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Indicator;
+use App\Models\LikertScale;
 use Illuminate\Database\Seeder;
 
 class EvaluationFormSeeder extends Seeder
@@ -14,10 +15,51 @@ class EvaluationFormSeeder extends Seeder
      */
     public function run(): void
     {
-        EvaluationForm::factory(50)
-            ->has(Criterion::factory(4, [
-                'weight' => 0.25,
-            ])->hasIndicators(5))
-            ->create();
+        $evaluationFormModel = new EvaluationForm;
+        $criterionModel = new Criterion;
+        $indicatorModel = new Indicator;
+
+        $jsonString = file_get_contents(base_path('database/seeders/json/evaluation_forms.json'));
+        $data = json_decode($jsonString, true);
+        $evaluationFormSeeds = $data['evaluation_forms'];
+
+        foreach ($evaluationFormSeeds as $evaluationFormSeed) {
+            $evaluationForm = $evaluationFormModel->newQuery()
+                ->firstOrCreate(
+                    [
+                        'title' => $evaluationFormSeed['title'],
+                    ],
+                    [
+                        'description' => $evaluationFormSeed['description'],
+                        'likert_scale_id' => LikertScale::where('code', $evaluationFormSeed['likert_scale_code'])->first()->id,
+                        'published' => true,
+                    ]
+                );
+
+            $evaluationFormCriterionSeeds = $evaluationFormSeed['criteria'];
+            foreach ($evaluationFormCriterionSeeds as $criterionSeed) {
+                $criterion = $criterionModel->newQuery()
+                    ->firstOrCreate(
+                        [
+                            'evaluation_form_id' => $evaluationForm->id,
+                            'description' => $criterionSeed['description'],
+                        ],
+                        [
+                            'weight' => $criterionSeed['weight'],
+                        ]
+                    );
+
+                $criterionIndicatorSeeds = $criterionSeed['indicators'];
+                foreach ($criterionIndicatorSeeds as $indicatorSeed) {
+                    $indicatorModel->newQuery()
+                        ->firstOrCreate(
+                            [
+                                'criterion_id' => $criterion->id,
+                                'description' => $indicatorSeed['description'],
+                            ]
+                        );
+                }
+            }
+        }
     }
 }

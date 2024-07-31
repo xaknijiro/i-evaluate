@@ -23,9 +23,9 @@ class StoreCriterionRequest extends FormRequest
     {
         return [
             'description' => 'required',
-            'weight' => 'required|numeric',
-            'indicators' => 'required|array',
-            'indicators.*.description' => 'required',
+            'weight' => 'sometimes|required|numeric',
+            'indicators' => 'sometimes|required|array',
+            'indicators.*.description' => 'sometimes|required',
         ];
     }
 }

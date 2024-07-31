@@ -22,11 +22,28 @@ services:
       - mysql
     networks:
       database:
+      mailpit:
     ports:
       - "8080:80"
     tty: true
     volumes:
       - '.:/var/www/html'
+
+  mailpit:
+    image: axllent/mailpit:latest
+    networks:
+      - mailpit
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+    ports:
+      - 1025:1025
+      - 8025:8025
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
 # Volumes setup
 volumes:
@@ -35,3 +52,4 @@ volumes:
 # Networks setup
 networks:
   database:
+  mailpit:
