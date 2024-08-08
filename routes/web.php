@@ -2,12 +2,18 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\EvaluationFormController;
 use App\Http\Controllers\EvaluationFormCriterionController;
+use App\Http\Controllers\EvaluationResultController;
 use App\Http\Controllers\EvaluationScheduleController;
 use App\Http\Controllers\EvaluationScheduleSubjectClassController;
 use App\Http\Controllers\StaticPageController;
+use App\Http\Controllers\SubjectController;
+use App\Models\EvaluationScheduleSubjectClass;
+use App\Services\EvaluationResultService;
+use Illuminate\Http\Request;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
@@ -60,6 +66,25 @@ Route::middleware('auth')->group(function () {
         });
     });
 
+    Route::group(['prefix' => '/calculate-evaluation-result/{evaluationScheduleSubjectClass}'], static function () {
+        Route::post('/', [EvaluationResultController::class, 'store']);
+    });
+
+    Route::group(['prefix' => '/departments'], static function () {
+        Route::get('/', [DepartmentController::class, 'index']);
+        Route::post('/', [DepartmentController::class, 'store']);
+    });
+
+    Route::group(['prefix' => '/subjects'], static function () {
+        Route::get('/', [SubjectController::class, 'index']);
+        Route::post('/', [SubjectController::class, 'store']);
+    });
+
+    Route::group(['prefix' => '/import-templates'], static function () {
+        Route::get('/departments', [DepartmentController::class, 'downloadTemplate']);
+        Route::get('/subjects', [SubjectController::class, 'downloadTemplate']);
+    });
+
     Route::get('/about', [StaticPageController::class, 'about']);
 });
 
@@ -69,4 +94,9 @@ Route::get('/test-email', function () {
             ->to('regolio.guisdan@kcp.edu.ph')
             ->subject('I-Evaluate Test Email');
     });
+});
+
+Route::get('/test-calculate-evaluation-result/{id}', function ($id) {
+    $x = resolve(EvaluationResultService::class);
+    return $x->calculate(EvaluationScheduleSubjectClass::find($id));
 });

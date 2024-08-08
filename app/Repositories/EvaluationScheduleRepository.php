@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\EvaluationSchedule;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EvaluationScheduleRepository
@@ -11,7 +12,7 @@ class EvaluationScheduleRepository
         protected EvaluationSchedule $evaluationSchedule
     ) {}
 
-    public function getLatestEvaluationSchedule()
+    public function getLatestEvaluationSchedule(): ?EvaluationSchedule
     {
         return $this->evaluationSchedule
             ->newQuery()
@@ -20,10 +21,19 @@ class EvaluationScheduleRepository
             ->orderBy('semester_id', 'desc')
             ->with([
                 'semester',
-                'subjectClasses.subject',
-                'subjectClasses.course',
-                'subjectClasses.assignedTo',
+                'subjectClasses' => function (BelongsToMany $query) {
+                    $query->with([
+                        'subject',
+                        'course',
+                        'assignedTo',
+                    ]);
+                    $query->join('subjects', 'subjects.id', '=', 'subject_classes.subject_id');
+                    $query->orderBy('subjects.title', 'asc');
+                },
                 'evaluationScheduleSubjectClasses' => function (HasMany $query) {
+                    $query->with([
+                        'evaluationResult',
+                    ]);
                     $query->withCount([
                         'evaluationPasscodes as respondents_count',
                         'evaluationPasscodes as respondents_submitted_count' => function ($query) {

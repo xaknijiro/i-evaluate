@@ -1,9 +1,23 @@
+import { ThemeProvider } from "@emotion/react";
 import { Head, router, usePage } from "@inertiajs/react";
-import { AccountCircle, AssessmentTwoTone, CalendarMonthTwoTone, DashboardTwoTone, FolderTwoTone, InfoTwoTone, Logout, Menu, Password, SettingsTwoTone } from "@mui/icons-material";
-import { AppBar, Avatar, Box, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Toolbar, Typography } from "@mui/material";
+import { AccountCircle, Apartment, AssessmentTwoTone, CalendarMonthTwoTone, DashboardTwoTone, Description, FolderTwoTone, InfoTwoTone, Logout, Menu, Password, People, Settings, SettingsTwoTone } from "@mui/icons-material";
+import { AppBar, Avatar, Box, createTheme, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Toolbar, Typography } from "@mui/material";
 import React from 'react';
 
 const MainLayout = ({ children, title }) => {
+
+    const theme = createTheme({
+        palette: {
+            mode: 'light',
+            primary: {
+              main: '#960e21',
+            },
+            secondary: {
+              main: '#f50057',
+            },
+          },
+    });
+
     const { auth } = usePage().props;
     const { email, name } = auth;
     const [openAppDrawer, setOpenAppDrawer] = React.useState(false);
@@ -73,6 +87,44 @@ const MainLayout = ({ children, title }) => {
                 </ListItem>
             </List>
             <Divider />
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    padding: 2,
+                }}
+            >
+                <Settings />
+                <Typography variant="h5">General Settings</Typography>
+            </Box>
+            <List>
+                <ListItem disablePadding>
+                    <ListItemButton onClick={routeToPage('departments')}>
+                        <ListItemIcon>
+                            <Apartment />
+                        </ListItemIcon>
+                        <ListItemText primary="Departments" />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton onClick={routeToPage('subjects')}>
+                        <ListItemIcon>
+                            <Apartment />
+                        </ListItemIcon>
+                        <ListItemText primary="Subjects" />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton onClick={routeToPage('about')}>
+                        <ListItemIcon>
+                            <People />
+                        </ListItemIcon>
+                        <ListItemText primary="Users" />
+                    </ListItemButton>
+                </ListItem>
+            </List>
+            <Divider />
             <List>
                 <ListItem disablePadding>
                     <ListItemButton onClick={routeToPage('about')}>
@@ -105,9 +157,9 @@ const MainLayout = ({ children, title }) => {
                 <ListItem disablePadding>
                     <ListItemButton onClick={routeToPage()}>
                         <ListItemIcon>
-                            <Password />
+                            <Description />
                         </ListItemIcon>
-                        <ListItemText primary="Change Password" />
+                        <ListItemText primary="My Profile" />
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
@@ -122,7 +174,7 @@ const MainLayout = ({ children, title }) => {
         </Box>
     );
 
-    return <>
+    return <ThemeProvider theme={theme}>
         <Head>
             <title>{title}</title>
             <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -172,7 +224,7 @@ const MainLayout = ({ children, title }) => {
             elevation={3}
             maxWidth={false}
             sx={{ p: 2, m: 2 }}>{children}</Paper>
-    </>;
+    </ThemeProvider>;
 };
 
 export default MainLayout;

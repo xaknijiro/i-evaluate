@@ -1,81 +1,138 @@
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import _ from 'lodash';
 import MainLayout from "../../MainLayout";
-import { Avatar, Box, Card, CardContent, CardHeader, Chip, Divider, Grid, IconButton, Paper, Stack, Typography } from "@mui/material";
-import { AccountCircle, Lock, LockOpen, Password, School, Subject } from "@mui/icons-material";
+import { Accordion, AccordionDetails, AccordionSummary, Button, Typography } from "@mui/material";
+import { AccountCircle, Calculate, ExpandMore, HourglassEmpty } from "@mui/icons-material";
 import React from 'react';
 import { Head, router } from "@inertiajs/react";
-import { Gauge, gaugeClasses } from "@mui/x-charts";
+import { DataGrid } from '@mui/x-data-grid';
 
 const Index = ({ latestEvaluationSchedule }) => {
+    const {
+        evaluatees,
+        subject_classes: subjectClasses,
+        evaluation_schedule_subject_classes: evaluationScheduleSubjectClasses
+    } = latestEvaluationSchedule || {};
+    const subjectClassesGroupByEvaluatee = _.groupBy(subjectClasses, 'assigned_to.id');
+    const subjectClassesEvaluationDetails = _.keyBy(evaluationScheduleSubjectClasses, 'code');
+
+    console.log(subjectClassesGroupByEvaluatee);
+    console.log(subjectClassesEvaluationDetails);
+
+    const handleCalculateResult = (e, evaluationScheduleSubjectClassId) => {
+        e.preventDefault();
+        router.post(
+            `/calculate-evaluation-result/${evaluationScheduleSubjectClassId}`,
+            {},
+            {
+                preserveScroll: true,
+                preserveState: false,
+            }
+        );
+    };
+
+    const columns = [
+        {
+            field: 'code',
+            headerName: 'Evaluation Code',
+            width: 150,
+            valueGetter: (cell) => {
+                return `${cell.row.pivot.code}`;
+            },
+        },
+        {
+            field: 'subject',
+            headerName: 'Subject',
+            flex: 1,
+            valueGetter: (cell) => {
+                return `${cell.value.code} - ${cell.value.title}`;
+            },
+        },
+        {
+            field: 'course',
+            width: 150,
+            headerName: 'Course',
+            valueGetter: (cell) => {
+                return `${cell.value.code}`;
+            },
+        },
+        {
+            field: 'year_level',
+            width: 100,
+            headerName: 'Year Level',
+        },
+        {
+            field: 'respondents_submitted_count',
+            headerName: 'Respondents Submitted',
+            width: 100,
+            renderCell: (cell) => {
+                const evaluationDetails = subjectClassesEvaluationDetails[cell.row.pivot.code];
+                return evaluationDetails?.respondents_submitted_count || 0;
+            },
+        },
+        {
+            field: 'respondents_registered_count',
+            headerName: 'Respondents Registered',
+            width: 100,
+            renderCell: (cell) => {
+                const evaluationDetails = subjectClassesEvaluationDetails[cell.row.pivot.code];
+                return evaluationDetails?.respondents_count || 0;
+            },
+        },
+        {
+            field: 'overall_score',
+            headerName: 'Overall Score',
+            flex: 1,
+            renderCell: (cell) => {
+                const evaluationDetails = subjectClassesEvaluationDetails[cell.row.pivot.code];
+                const { evaluation_result: evaluationResult } = evaluationDetails;
+                const isClosed = !evaluationDetails?.is_open || false;
+
+                if (!isClosed && (evaluationDetails?.respondents_count || 0) === 0) {
+                    return <Button
+                        disabled
+                        startIcon={<HourglassEmpty />}
+                        variant="outlined"
+                    >
+                        In Progress
+                    </Button>;
+                }
+
+                return isClosed && !_.isNull(evaluationResult)
+                    ? `${evaluationResult.details.overall_score}%`
+                    : <Button
+                        onClick={(e) => handleCalculateResult(e, cell.row.pivot.id)}
+                        startIcon={<Calculate />}
+                        variant="contained"
+                    >
+                        Calculate Result
+                    </Button>;
+            },
+        },
+    ];
+
     return (
         <>
             <Head>
                 <title>Dashboard</title>
             </Head>
-            {latestEvaluationSchedule && <Card>
-                <CardContent>
-                    <Typography variant="h5">Latest Evaluation Schedule</Typography>
-                    <Typography variant="caption">
-                        {latestEvaluationSchedule.academic_year} {latestEvaluationSchedule.semester.title}
+            {evaluatees && evaluatees.map((evaluatee) => <Accordion>
+                <AccordionSummary
+                    expandIcon={<ExpandMore />}
+                >
+                    <AccountCircle />
+                    <Typography>{evaluatee.name}</Typography>
+                    <Typography>
+                        Scheduled Subject Classes: {subjectClassesGroupByEvaluatee[evaluatee.id].length}
                     </Typography>
-                    <Gauge
-                        value={latestEvaluationSchedule.subject_classes_count_closed}
-                        valueMax={latestEvaluationSchedule.subject_classes_count}
-                        startAngle={-110}
-                        endAngle={110}
-                        sx={{
-                            [`& .${gaugeClasses.valueText}`]: {
-                                fontSize: 40,
-                                transform: 'translate(0px, 0px)',
-                            },
-                        }}
-                        text={
-                            ({ value, valueMax }) => `${value} / ${valueMax}`
-                        }
-                        height={200}
+                </AccordionSummary>
+                <AccordionDetails>
+                    <DataGrid
+                        autoHeight
+                        columns={columns}
+                        rows={subjectClassesGroupByEvaluatee[evaluatee.id]}
                     />
-                    <Grid container spacing={2}>
-                        {latestEvaluationSchedule.subject_classes.map((subjectClass) => <Grid item md={6}>
-                            <Paper
-                                sx={{
-                                    padding: 2,
-                                }}
-                            >
-                                <Stack direction="row" spacing={2} alignItems="center" marginBottom={2}>
-                                    <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                                        <AccountCircle />
-                                    </Avatar>
-                                    <Typography component="h1" variant="h5">
-                                        {subjectClass.assigned_to.name}
-                                    </Typography>
-                                </Stack>
-                                <Divider sx={{ marginBottom: 2 }}/>
-                                <Chip icon={<Password />} label={subjectClass.pivot.code} color="success" sx={{ marginRight: 1 }} />
-                                <Chip icon={<Subject />} label={`${subjectClass.subject.code} - ${subjectClass.subject.title}`} color="primary" sx={{ marginRight: 1 }} />
-                                <Chip icon={<School />} label={`(${subjectClass.course.code} - ${subjectClass.year_level})`} color="secondary" sx={{ marginRight: 1 }} />
-                                {latestEvaluationSchedule.evaluation_schedule_subject_classes
-                                    .filter((evaluation_schedule_subject_class) => evaluation_schedule_subject_class.id === subjectClass.pivot.id)
-                                    .map((evaluation_schedule_subject_class) => <Gauge
-                                        value={evaluation_schedule_subject_class.respondents_submitted_count}
-                                        valueMax={evaluation_schedule_subject_class.respondents_count}
-                                        startAngle={-110}
-                                        endAngle={110}
-                                        sx={{
-                                            [`& .${gaugeClasses.valueText}`]: {
-                                                fontSize: 40,
-                                                transform: 'translate(0px, 0px)',
-                                            },
-                                        }}
-                                        text={
-                                            ({ value, valueMax }) => `${value} / ${valueMax}`
-                                        }
-                                        height={150}
-                                    />)}
-                            </Paper>
-                        </Grid>)}
-                    </Grid>
-                </CardContent>
-            </Card>}
+                </AccordionDetails>
+            </Accordion>)}
         </>
     );
 };

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class EvaluationScheduleSubjectClass extends Pivot
@@ -33,5 +34,10 @@ class EvaluationScheduleSubjectClass extends Pivot
     public function evaluationPasscodes(): HasMany
     {
         return $this->hasMany(EvaluationPasscode::class, 'evaluation_schedule_subject_class_id');
+    }
+
+    public function evaluationResult(): HasOne
+    {
+        return $this->hasOne(EvaluationResult::class, 'evaluation_schedule_subject_class_id');        
     }
 }

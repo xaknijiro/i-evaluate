@@ -1,10 +1,23 @@
 import * as React from 'react';
 import Container from '@mui/material/Container';
 import { Head, router } from '@inertiajs/react';
-import { Alert, AppBar, Box, Button, Chip, Divider, Icon, Paper, Rating, Stack, Toolbar, Typography } from '@mui/material';
+import { Alert, AppBar, Box, Button, Chip, createTheme, Divider, Icon, Paper, Rating, Stack, Toolbar, Typography } from '@mui/material';
 import { AccountCircle, DateRange, Password, School, Subject } from '@mui/icons-material';
+import { ThemeProvider } from '@emotion/react';
 
 export default function Show({ errors, id, code, subject, academicYear, semester, course, yearLevel, assignedTo, evaluationType, evaluationForm }) {
+    const theme = createTheme({
+        palette: {
+            mode: 'light',
+            primary: {
+              main: '#960e21',
+            },
+            secondary: {
+              main: '#f50057',
+            },
+          },
+    });
+    
     const { likert_scale: likertScale } = evaluationForm || {};
     const { default_options: options } = likertScale || {};
 
@@ -27,7 +40,7 @@ export default function Show({ errors, id, code, subject, academicYear, semester
     };
 
     return (
-        <>
+        <ThemeProvider theme={theme}>
             <React.Fragment>
                 <AppBar position="fixed">
                     <Toolbar>
@@ -106,6 +119,6 @@ export default function Show({ errors, id, code, subject, academicYear, semester
                     </Button>
                 </Box>
             </Container>
-        </>
+        </ThemeProvider>
     );
 }

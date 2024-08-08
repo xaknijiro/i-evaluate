@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\EvaluationSchedule;
 use App\Repositories\EvaluationScheduleRepository;
 
 class EvaluationScheduleService
@@ -10,8 +11,17 @@ class EvaluationScheduleService
         protected EvaluationScheduleRepository $evaluationScheduleRepository,
     ) {}
 
-    public function getLatestEvaluationSchedule()
+    public function getLatestEvaluationSchedule(): ?EvaluationSchedule
     {
-        return $this->evaluationScheduleRepository->getLatestEvaluationSchedule();
+        $latestEvaluationSchedule = $this->evaluationScheduleRepository->getLatestEvaluationSchedule();
+
+        if ($latestEvaluationSchedule) {
+            $latestEvaluationSchedule->evaluatees = $latestEvaluationSchedule->subjectClasses
+            ->groupBy('assigned_to')
+            ->map(fn ($group) => $group->first()->assignedTo)
+            ->values();
+        }
+        
+        return $latestEvaluationSchedule;
     }
 }
