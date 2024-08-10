@@ -3,8 +3,6 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
@@ -13,7 +11,8 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Head, router, usePage } from '@inertiajs/react';
-import { ErrorSharp } from '@mui/icons-material';
+import { Send } from '@mui/icons-material';
+import { Alert, Snackbar } from '@mui/material';
 
 function Copyright(props) {
   return (
@@ -32,22 +31,45 @@ function Copyright(props) {
 
 const defaultTheme = createTheme();
 
-const Login = ({ errors }) => {
+const ForgotPassword = ({ errors, flashMessage }) => {
   const { appName } = usePage().props;
+  const [openFlashMessage, setOpenFlashMessage] = React.useState(true);
+  const handleCloseFlashMessage = (_event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpenFlashMessage(false);
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const requestPayload = {
       email: data.get('email'),
-      password: data.get('password'),
     };
-    router.post('/login', requestPayload);
+    router.post('/forgot-password', requestPayload);
   };
 
   return (
     <ThemeProvider theme={defaultTheme}>
       <Head title="Sign-in" />
+
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        autoHideDuration={3000}
+        onClose={handleCloseFlashMessage}
+        open={!!flashMessage && openFlashMessage}
+      >
+        <Alert
+          onClose={handleCloseFlashMessage}
+          severity={flashMessage?.severity}
+          sx={{ width: '100%' }}
+          variant="filled"
+        >
+          {flashMessage?.value}
+        </Alert>
+      </Snackbar>
+
       <Grid container component="main" sx={{ height: '100vh' }}>
         <CssBaseline />
         <Grid
@@ -93,28 +115,19 @@ const Login = ({ errors }) => {
                 error={!!errors.email}
                 helperText={!!errors.email && errors.email}
               />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-              />
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
+                endIcon={<Send />}
                 sx={{ mt: 3, mb: 2 }}
               >
-                Sign In
+                Request Reset Link
               </Button>
               <Grid container>
                 <Grid item xs>
-                  <Link href="/forgot-password" variant="body2">
-                    Forgot password?
+                  <Link href="/login" variant="body2">
+                    Back
                   </Link>
                 </Grid>
               </Grid>
@@ -127,4 +140,4 @@ const Login = ({ errors }) => {
   );
 }
 
-export default Login;
+export default ForgotPassword;

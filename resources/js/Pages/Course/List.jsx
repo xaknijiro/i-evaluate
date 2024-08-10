@@ -17,23 +17,23 @@ const VisuallyHiddenInput = styled('input')({
     width: 1,
 });
 
-const List = ({ errors, subjects }) => {
+const List = ({ errors, courses }) => {
     const [paginationModel, setPaginationModel] = React.useState({
-        page: subjects.meta.current_page - 1,
-        pageSize: subjects.meta.per_page,
+        page: courses.meta.current_page - 1,
+        pageSize: courses.meta.per_page,
     });
 
-    const rowCountRef = React.useRef(subjects.meta.total || 0);
+    const rowCountRef = React.useRef(courses.meta.total || 0);
 
     const rowCount = React.useMemo(() => {
-        if (subjects.meta.total !== undefined) {
-            rowCountRef.current = subjects.meta.total;
+        if (courses.meta.total !== undefined) {
+            rowCountRef.current = courses.meta.total;
         }
         return rowCountRef.current;
-    }, [subjects.meta.total]);
+    }, [courses.meta.total]);
 
     const handlePaginationChange = (newPaginationModel) => {
-        router.get('/subjects', {
+        router.get('/courses', {
             page: newPaginationModel.page + 1,
             per_page: newPaginationModel.pageSize,
         }, {
@@ -68,8 +68,7 @@ const List = ({ errors, subjects }) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         const formJson = Object.fromEntries(formData.entries());
-        console.log(formJson);
-        router.post(`/subjects`, formJson, {
+        router.post(`/courses`, formJson, {
             preserveScroll: true,
             preserveState: false,
         });
@@ -88,10 +87,10 @@ const List = ({ errors, subjects }) => {
                             startIcon={<CloudUpload />}
                             onSubmit={handleImport}
                         >
-                            Upload Subjects
-                            <VisuallyHiddenInput type="file" name="subjects" />
+                            Upload Courses
+                            <VisuallyHiddenInput type="file" name="courses" />
                         </Button>
-                        {!!errors.subjects ? <p style={{ color: 'red' }}>{errors.subjects}</p> : null}
+                        {!!errors.courses ? <p style={{ color: 'red' }}>{errors.courses}</p> : null}
                         <Button
                             type="submit"
                             variant="contained"
@@ -101,7 +100,7 @@ const List = ({ errors, subjects }) => {
                     </Stack>
                 </Box>
                 <Link
-                    href="/import-templates/subjects"
+                    href="/import-templates/courses"
                     target="_blank"
                     rel="noopener noreferrer"
                 >
@@ -117,7 +116,7 @@ const List = ({ errors, subjects }) => {
                 paginationMode="server"
                 paginationModel={paginationModel}
                 rowCount={rowCount}
-                rows={subjects.data}
+                rows={courses.data}
             />
         </>
     );

@@ -17,23 +17,23 @@ const VisuallyHiddenInput = styled('input')({
     width: 1,
 });
 
-const List = ({ errors, subjects }) => {
+const List = ({ errors, users }) => {
     const [paginationModel, setPaginationModel] = React.useState({
-        page: subjects.meta.current_page - 1,
-        pageSize: subjects.meta.per_page,
+        page: users.meta.current_page - 1,
+        pageSize: users.meta.per_page,
     });
 
-    const rowCountRef = React.useRef(subjects.meta.total || 0);
+    const rowCountRef = React.useRef(users.meta.total || 0);
 
     const rowCount = React.useMemo(() => {
-        if (subjects.meta.total !== undefined) {
-            rowCountRef.current = subjects.meta.total;
+        if (users.meta.total !== undefined) {
+            rowCountRef.current = users.meta.total;
         }
         return rowCountRef.current;
-    }, [subjects.meta.total]);
+    }, [users.meta.total]);
 
     const handlePaginationChange = (newPaginationModel) => {
-        router.get('/subjects', {
+        router.get('/users', {
             page: newPaginationModel.page + 1,
             per_page: newPaginationModel.pageSize,
         }, {
@@ -44,24 +44,17 @@ const List = ({ errors, subjects }) => {
 
     const columns = [
         {
-            field: 'code',
+            field: 'last_name',
             flex: 0.25,
-            headerName: 'Code',
+            headerName: 'Last Name',
             sortable: false,
         },
         {
-            field: 'title',
+            field: 'first_name',
             flex: 0.5,
-            headerName: 'Title',
+            headerName: 'First Name',
             sortable: false,
         },
-        {
-            field: 'department',
-            flex: 0.5,
-            headerName: 'Department',
-            sortable: false,
-            valueGetter: (cell) => `${cell.row.department.code} - ${cell.row.department.title}`,
-        }
     ];
 
     const handleImport = (event) => {
@@ -69,7 +62,7 @@ const List = ({ errors, subjects }) => {
         const formData = new FormData(event.currentTarget);
         const formJson = Object.fromEntries(formData.entries());
         console.log(formJson);
-        router.post(`/subjects`, formJson, {
+        router.post(`/users`, formJson, {
             preserveScroll: true,
             preserveState: false,
         });
@@ -88,10 +81,10 @@ const List = ({ errors, subjects }) => {
                             startIcon={<CloudUpload />}
                             onSubmit={handleImport}
                         >
-                            Upload Subjects
-                            <VisuallyHiddenInput type="file" name="subjects" />
+                            Upload Users
+                            <VisuallyHiddenInput type="file" name="users" />
                         </Button>
-                        {!!errors.subjects ? <p style={{ color: 'red' }}>{errors.subjects}</p> : null}
+                        {!!errors.users ? <p style={{ color: 'red' }}>{errors.users}</p> : null}
                         <Button
                             type="submit"
                             variant="contained"
@@ -101,7 +94,7 @@ const List = ({ errors, subjects }) => {
                     </Stack>
                 </Box>
                 <Link
-                    href="/import-templates/subjects"
+                    href="/import-templates/users"
                     target="_blank"
                     rel="noopener noreferrer"
                 >
@@ -117,7 +110,7 @@ const List = ({ errors, subjects }) => {
                 paginationMode="server"
                 paginationModel={paginationModel}
                 rowCount={rowCount}
-                rows={subjects.data}
+                rows={users.data}
             />
         </>
     );

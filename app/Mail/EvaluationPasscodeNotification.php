@@ -8,11 +8,14 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Queue\SerializesModels;
 
 class EvaluationPasscodeNotification extends Mailable
 {
     use Queueable, SerializesModels;
+
+    private MailMessage $mailMessage;
 
     /**
      * Create a new message instance.
@@ -20,7 +23,7 @@ class EvaluationPasscodeNotification extends Mailable
     public function __construct(
         protected EvaluationPasscode $evaluationPasscode
     ) {
-        //
+        $this->mailMessage = new MailMessage();
     }
 
     /**
@@ -45,17 +48,21 @@ class EvaluationPasscodeNotification extends Mailable
         $assignedTo = $this->evaluationPasscode->evaluationScheduleSubjectClass->subjectClass->assignedTo;
         $passcode = $this->evaluationPasscode->code;
         return new Content(
-            view: 'mail.evaluation-passcode-notification',
-            with: [
-                'evaluateeName' => $assignedTo->name,
-                'evaluationCode' => $evaluationCode,
-                'subject' => "$subject->code - $subject->title",
-                'course' => $subjectClass->course->code,
-                'yearLevel' => $subjectClass->year_level,
-                'academicYear' => $subjectClass->academic_year,
-                'semester' => $subjectClass->semester->title,
-                'passcode' => $passcode,
-            ]
+            htmlString: $this->mailMessage
+                ->level('info')
+                ->greeting("Greetings!")
+                ->line("---")
+                ->line("## Your evaluation passcode is: *{$passcode}*")
+                ->lines([
+                    "---",
+                    "Evaluatee: ***{$assignedTo->name}***",
+                    "Evaluation Code: ***{$evaluationCode}***",
+                    "- Subject: {$subject->code} - {$subject->title}",
+                    "- Course/Year: {$subjectClass->course->code} - {$subjectClass->year_level}",
+                    "- A.Y./Semester: {$subjectClass->academic_year} - {$subjectClass->semester->title}",
+                    "---",
+                ])
+                ->render()
         );
     }
 

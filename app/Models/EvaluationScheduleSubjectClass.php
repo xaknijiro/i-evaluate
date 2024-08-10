@@ -21,6 +21,10 @@ class EvaluationScheduleSubjectClass extends Pivot
         'is_open',
     ];
 
+    protected $casts = [
+        'is_open' => 'boolean',
+    ];
+
     public function subjectClass(): BelongsTo
     {
         return $this->belongsTo(SubjectClass::class);

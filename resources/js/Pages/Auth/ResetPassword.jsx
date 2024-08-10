@@ -3,8 +3,6 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
@@ -13,7 +11,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Head, router, usePage } from '@inertiajs/react';
-import { ErrorSharp } from '@mui/icons-material';
+import { Send, Token } from '@mui/icons-material';
 
 function Copyright(props) {
   return (
@@ -32,7 +30,7 @@ function Copyright(props) {
 
 const defaultTheme = createTheme();
 
-const Login = ({ errors }) => {
+const ResetPassword = ({ errors, email, token }) => {
   const { appName } = usePage().props;
 
   const handleSubmit = (event) => {
@@ -41,8 +39,10 @@ const Login = ({ errors }) => {
     const requestPayload = {
       email: data.get('email'),
       password: data.get('password'),
+      password_confirmation: data.get('password_confirmation'),
+      token: data.get('token'),
     };
-    router.post('/login', requestPayload);
+    router.post('/reset-password', requestPayload);
   };
 
   return (
@@ -82,18 +82,19 @@ const Login = ({ errors }) => {
             </Typography>
             <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
               <TextField
+                defaultValue={email}
+                inputProps={{ readOnly: true }}
                 margin="normal"
                 required
                 fullWidth
                 id="email"
                 label="Email Address"
                 name="email"
-                autoComplete="email"
-                autoFocus
                 error={!!errors.email}
                 helperText={!!errors.email && errors.email}
               />
               <TextField
+                autoFocus
                 margin="normal"
                 required
                 fullWidth
@@ -102,22 +103,29 @@ const Login = ({ errors }) => {
                 type="password"
                 id="password"
                 autoComplete="current-password"
+                error={!!errors.password}
+                helperText={!!errors.password && errors.password}
               />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="password_confirmation"
+                label="Confirm Password"
+                type="password"
+                id="password_confirmation"
+                autoComplete="current-password"
+              />
+              <input type="hidden" name="token" value={token} />
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
+                endIcon={<Send />}
                 sx={{ mt: 3, mb: 2 }}
               >
-                Sign In
+                Change Password
               </Button>
-              <Grid container>
-                <Grid item xs>
-                  <Link href="/forgot-password" variant="body2">
-                    Forgot password?
-                  </Link>
-                </Grid>
-              </Grid>
               <Copyright sx={{ mt: 5 }} />
             </Box>
           </Box>
@@ -127,4 +135,4 @@ const Login = ({ errors }) => {
   );
 }
 
-export default Login;
+export default ResetPassword;

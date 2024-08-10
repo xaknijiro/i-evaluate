@@ -1,9 +1,9 @@
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import MainLayout from "../../MainLayout";
 import { IconButton } from "@mui/material";
-import { Lock, LockOpen } from "@mui/icons-material";
+import { Details, FolderOpen, Lock, LockOpen } from "@mui/icons-material";
 import React from 'react';
-import { router } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 
 const List = ({ evaluationSchedules }) => {
     const [paginationModel, setPaginationModel] = React.useState({
@@ -86,6 +86,14 @@ const List = ({ evaluationSchedules }) => {
                     <Lock />
                 </IconButton>;
             },
+        },
+        {
+            headerName: '',
+            renderCell: (cell) => <Link
+                href={`/evaluation-schedules/${cell.row.id}/evaluatees`}
+            >
+                <FolderOpen/>
+            </Link>,
         },
     ];
 

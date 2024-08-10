@@ -1,8 +1,9 @@
 import { ThemeProvider } from "@emotion/react";
 import { Head, router, usePage } from "@inertiajs/react";
-import { AccountCircle, Apartment, AssessmentTwoTone, CalendarMonthTwoTone, DashboardTwoTone, Description, FolderTwoTone, InfoTwoTone, Logout, Menu, Password, People, Settings, SettingsTwoTone } from "@mui/icons-material";
-import { AppBar, Avatar, Box, createTheme, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Toolbar, Typography } from "@mui/material";
+import { AccountCircle, Apartment, AssessmentTwoTone, CalendarMonthTwoTone, DashboardTwoTone, Description, ExpandLess, ExpandMore, FolderTwoTone, InfoTwoTone, ListAlt, Logout, Menu, Password, People, School, Settings, SettingsTwoTone } from "@mui/icons-material";
+import { Alert, AppBar, Avatar, Box, Collapse, createTheme, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Snackbar, Toolbar, Typography } from "@mui/material";
 import React from 'react';
+import { includes } from 'lodash';
 
 const MainLayout = ({ children, title }) => {
 
@@ -10,18 +11,27 @@ const MainLayout = ({ children, title }) => {
         palette: {
             mode: 'light',
             primary: {
-              main: '#960e21',
+                main: '#960e21',
             },
             secondary: {
-              main: '#f50057',
+                main: '#f50057',
             },
-          },
+        },
     });
 
-    const { auth } = usePage().props;
+    const { auth, flashMessage } = usePage().props;
+    const { roles } = auth;
     const { email, name } = auth;
     const [openAppDrawer, setOpenAppDrawer] = React.useState(false);
     const [openUserDrawer, setOpenUserDrawer] = React.useState(false);
+    const [openFlashMessage, setOpenFlashMessage] = React.useState(true);
+    
+    const handleCloseFlashMessage = (_event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpenFlashMessage(false);
+    };
 
     const toggleAppDrawer = (newOpenAppDrawer) => () => {
         setOpenAppDrawer(newOpenAppDrawer);
@@ -29,6 +39,12 @@ const MainLayout = ({ children, title }) => {
 
     const toggleUserDrawer = (newOpenUserDrawer) => () => {
         setOpenUserDrawer(newOpenUserDrawer);
+    };
+
+    const [openSettings, setOpenSettings] = React.useState(false);
+    const toggleSettings = (event) => {
+        event.stopPropagation();
+        setOpenSettings(!openSettings);
     };
 
     const routeToPage = (url) => () => {
@@ -40,7 +56,13 @@ const MainLayout = ({ children, title }) => {
     };
 
     const AppMenu = (
-        <Box sx={{ width: 250 }} role="presentation" onClick={toggleAppDrawer(false)}>
+        <Box sx={{ width: 300 }} role="presentation" onClick={toggleAppDrawer(false)}>
+            <img
+                src="/images/logo-kcp-emblem.png"
+                alt="KCP"
+                height={180}
+                style={{ margin: 'auto', display: 'block' }}
+            />
             <List>
                 <ListItem disablePadding>
                     <ListItemButton onClick={routeToPage()}>
@@ -69,62 +91,68 @@ const MainLayout = ({ children, title }) => {
                         <ListItemText primary="Generate Report" />
                     </ListItemButton>
                 </ListItem>
-                <ListItem disablePadding>
-                    <ListItemButton onClick={routeToPage('evaluation-forms')}>
-                        <ListItemIcon>
-                            <FolderTwoTone />
-                        </ListItemIcon>
-                        <ListItemText primary="Evaluation Forms" />
-                    </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                    <ListItemButton>
-                        <ListItemIcon>
-                            <SettingsTwoTone />
-                        </ListItemIcon>
-                        <ListItemText primary="General Settings" />
-                    </ListItemButton>
-                </ListItem>
             </List>
             <Divider />
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    padding: 2,
-                }}
-            >
-                <Settings />
-                <Typography variant="h5">General Settings</Typography>
-            </Box>
-            <List>
-                <ListItem disablePadding>
-                    <ListItemButton onClick={routeToPage('departments')}>
-                        <ListItemIcon>
-                            <Apartment />
-                        </ListItemIcon>
-                        <ListItemText primary="Departments" />
-                    </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                    <ListItemButton onClick={routeToPage('subjects')}>
-                        <ListItemIcon>
-                            <Apartment />
-                        </ListItemIcon>
-                        <ListItemText primary="Subjects" />
-                    </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                    <ListItemButton onClick={routeToPage('about')}>
-                        <ListItemIcon>
-                            <People />
-                        </ListItemIcon>
-                        <ListItemText primary="Users" />
-                    </ListItemButton>
-                </ListItem>
-            </List>
-            <Divider />
+
+            {includes(roles, 'Evaluation Manager') && <>
+                <List>
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={toggleSettings}>
+                            <ListItemIcon>
+                                <SettingsTwoTone />
+                            </ListItemIcon>
+                            <ListItemText primary="General Settings" />
+                            {openSettings ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+                    </ListItem>
+                    <Collapse in={openSettings} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            <ListItem disablePadding>
+                                <ListItemButton onClick={routeToPage('evaluation-forms')} sx={{ pl: 6 }}>
+                                    <ListItemIcon>
+                                        <FolderTwoTone />
+                                    </ListItemIcon>
+                                    <ListItemText primary="Evaluation Forms" />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton onClick={routeToPage('departments')} sx={{ pl: 6 }}>
+                                    <ListItemIcon>
+                                        <Apartment />
+                                    </ListItemIcon>
+                                    <ListItemText primary="Departments Regitry" />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton onClick={routeToPage('courses')} sx={{ pl: 6 }}>
+                                    <ListItemIcon>
+                                        <School />
+                                    </ListItemIcon>
+                                    <ListItemText primary="Courses Registry" />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton onClick={routeToPage('subjects')} sx={{ pl: 6 }}>
+                                    <ListItemIcon>
+                                        <ListAlt />
+                                    </ListItemIcon>
+                                    <ListItemText primary="Subjects Registry" />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton onClick={routeToPage('users')} sx={{ pl: 6 }}>
+                                    <ListItemIcon>
+                                        <People />
+                                    </ListItemIcon>
+                                    <ListItemText primary="Users Registry" />
+                                </ListItemButton>
+                            </ListItem>
+                        </List>
+                    </Collapse>
+                </List>
+                <Divider />
+            </>}
+
             <List>
                 <ListItem disablePadding>
                     <ListItemButton onClick={routeToPage('about')}>
@@ -219,6 +247,22 @@ const MainLayout = ({ children, title }) => {
         <Drawer anchor="right" open={openUserDrawer} onClose={toggleUserDrawer(false)}>
             {UserMenu}
         </Drawer>
+
+        <Snackbar
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            autoHideDuration={3000}
+            onClose={handleCloseFlashMessage}
+            open={!!flashMessage && openFlashMessage}
+        >
+            <Alert
+                onClose={handleCloseFlashMessage}
+                severity={flashMessage?.severity}
+                sx={{ width: '100%' }}
+                variant="filled"
+            >
+                {flashMessage?.value}
+            </Alert>
+        </Snackbar>
 
         <Paper
             elevation={3}

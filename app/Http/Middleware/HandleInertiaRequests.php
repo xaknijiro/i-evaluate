@@ -41,6 +41,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => Auth::user() ? [
                 'email' => Auth::user()->email,
                 'name' => Auth::user()->name,
+                'roles' => Auth::user()->roles->pluck('name'),
             ] : null,
             'flashMessage' => $request->session()->get('i-evaluate-flash-message'),
         ]);

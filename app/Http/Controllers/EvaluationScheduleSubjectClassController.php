@@ -9,6 +9,7 @@ use App\Models\EvaluationPasscode;
 use App\Models\EvaluationResponse;
 use App\Models\EvaluationScheduleSubjectClass;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -19,7 +20,8 @@ class EvaluationScheduleSubjectClassController extends Controller
 {
     public function __construct(
         protected EvaluationPasscode $evaluationPasscode,
-        protected EvaluationResponse $evaluationResponse
+        protected EvaluationResponse $evaluationResponse,
+        protected MailMessage $mailMessage
     ) {}
 
     public function index(Request $request, EvaluationScheduleSubjectClass $evaluationScheduleSubjectClass)

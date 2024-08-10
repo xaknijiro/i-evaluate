@@ -9,19 +9,22 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Queue\SerializesModels;
 
 class EvaluationCompleteNotification extends Mailable
 {
     use Queueable, SerializesModels;
 
+    private MailMessage $mailMessage;
+    
     /**
      * Create a new message instance.
      */
     public function __construct(
         protected EvaluationScheduleSubjectClass $evaluationScheduleSubjectClass
     ) {
-        //
+        $this->mailMessage = new MailMessage();
     }
 
     /**
@@ -46,16 +49,21 @@ class EvaluationCompleteNotification extends Mailable
         $assignedTo = $this->evaluationScheduleSubjectClass->subjectClass->assignedTo;
         
         return new Content(
-            view: 'mail.evaluation-complete-notification',
-            with: [
-                'evaluateeName' => $assignedTo->name,
-                'evaluationCode' => $evaluationCode,
-                'subject' => "$subject->code - $subject->title",
-                'course' => $subjectClass->course->code,
-                'yearLevel' => $subjectClass->year_level,
-                'academicYear' => $subjectClass->academic_year,
-                'semester' => $subjectClass->semester->title,
-            ]
+            htmlString: $this->mailMessage
+                ->level('info')
+                ->greeting("Thanks!")
+                ->line("---")
+                ->line("## Evaluation responses collected successfully.")
+                ->lines([
+                    "---",
+                    "Evaluatee: ***{$assignedTo->name}***",
+                    "Evaluation Code: ***{$evaluationCode}***",
+                    "- Subject: {$subject->code} - {$subject->title}",
+                    "- Course/Year: {$subjectClass->course->code} - {$subjectClass->year_level}",
+                    "- A.Y./Semester: {$subjectClass->academic_year} - {$subjectClass->semester->title}",
+                    "---",
+                ])
+                ->render()
         );
     }
 

@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
     public function run(User $user): void
     {
         // Default User
-        $user->newQuery()
+        $defaultUser = $user->newQuery()
             ->firstOrCreate(
                 [
                     'email' => 'dave.medrano@example.com',
@@ -29,6 +29,8 @@ class DatabaseSeeder extends Seeder
             );
 
         $this->call([
+            RoleSeeder::class,
+            
             SemesterSeeder::class,
             DepartmentSeeder::class,
             CourseSeeder::class,
@@ -38,5 +40,7 @@ class DatabaseSeeder extends Seeder
             EvaluationTypeSeeder::class,
             EvaluationFormSeeder::class,
         ]);
+
+        $defaultUser->assignRole('Evaluation Manager');
     }
 }

@@ -14,7 +14,7 @@ class StoreSubjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'subjects' => 'required|file|mimes:csv',
         ];
     }
 }
