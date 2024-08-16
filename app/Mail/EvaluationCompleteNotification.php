@@ -2,10 +2,8 @@
 
 namespace App\Mail;
 
-use App\Models\EvaluationPasscode;
 use App\Models\EvaluationScheduleSubjectClass;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -17,14 +15,14 @@ class EvaluationCompleteNotification extends Mailable
     use Queueable, SerializesModels;
 
     private MailMessage $mailMessage;
-    
+
     /**
      * Create a new message instance.
      */
     public function __construct(
         protected EvaluationScheduleSubjectClass $evaluationScheduleSubjectClass
     ) {
-        $this->mailMessage = new MailMessage();
+        $this->mailMessage = new MailMessage;
     }
 
     /**
@@ -47,21 +45,21 @@ class EvaluationCompleteNotification extends Mailable
         $subjectClass = $this->evaluationScheduleSubjectClass->subjectClass;
         $subject = $this->evaluationScheduleSubjectClass->subjectClass->subject;
         $assignedTo = $this->evaluationScheduleSubjectClass->subjectClass->assignedTo;
-        
+
         return new Content(
             htmlString: $this->mailMessage
                 ->level('info')
-                ->greeting("Thanks!")
-                ->line("---")
-                ->line("## Evaluation responses collected successfully.")
+                ->greeting('Thanks!')
+                ->line('---')
+                ->line('## Evaluation responses collected successfully.')
                 ->lines([
-                    "---",
+                    '---',
                     "Evaluatee: ***{$assignedTo->name}***",
                     "Evaluation Code: ***{$evaluationCode}***",
                     "- Subject: {$subject->code} - {$subject->title}",
                     "- Course/Year: {$subjectClass->course->code} - {$subjectClass->year_level}",
                     "- A.Y./Semester: {$subjectClass->academic_year} - {$subjectClass->semester->title}",
-                    "---",
+                    '---',
                 ])
                 ->render()
         );

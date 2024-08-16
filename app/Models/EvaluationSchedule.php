@@ -16,7 +16,12 @@ class EvaluationSchedule extends Model
         'academic_year',
         'semester_id',
         'evaluation_type_id',
+        'evaluation_form_id',
         'is_open',
+    ];
+
+    protected $casts = [
+        'is_open' => 'bool',
     ];
 
     public function semester(): BelongsTo
@@ -47,5 +52,5 @@ class EvaluationSchedule extends Model
     public function evaluationScheduleSubjectClasses(): HasMany
     {
         return $this->hasMany(EvaluationScheduleSubjectClass::class);
-    } 
+    }
 }

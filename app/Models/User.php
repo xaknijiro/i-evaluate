@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -23,8 +24,10 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'first_name',
+        'institution_id',
         'last_name',
+        'first_name',
+        'gender',
         'email',
         'password',
     ];
@@ -54,11 +57,16 @@ class User extends Authenticatable
 
     protected function name(): Attribute
     {
-        return Attribute::make(get: fn ($value, $attributes) => $attributes['first_name'] . ' ' . $attributes['last_name']);
+        return Attribute::make(get: fn ($value, $attributes) => $attributes['first_name'].' '.$attributes['last_name']);
     }
-    
+
     public function subjectClasses(): HasMany
     {
         return $this->hasMany(SubjectClass::class, 'assigned_to', 'id');
+    }
+
+    public function departments(): BelongsToMany
+    {
+        return $this->belongsToMany(Department::class);
     }
 }

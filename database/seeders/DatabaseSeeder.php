@@ -22,15 +22,17 @@ class DatabaseSeeder extends Seeder
                     'email' => 'dave.medrano@example.com',
                 ],
                 [
+                    'institution_id' => '01234567891',
                     'first_name' => 'Dave',
                     'last_name' => 'Medrano',
+                    'gender' => 'Male',
                     'password' => Hash::make('123456'),
                 ]
             );
 
         $this->call([
             RoleSeeder::class,
-            
+
             SemesterSeeder::class,
             DepartmentSeeder::class,
             CourseSeeder::class,

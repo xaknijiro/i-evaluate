@@ -15,9 +15,7 @@ class SubjectController extends Controller
     public function __construct(
         protected Department $departmentModel,
         protected Subject $subjectModel
-    ) {
-
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -50,7 +48,7 @@ class SubjectController extends Controller
             $department = $this->departmentModel->newQuery()
                 ->where('code', $row[2])
                 ->first();
-            if (!$department) {
+            if (! $department) {
                 continue;
             }
             $data[] = [

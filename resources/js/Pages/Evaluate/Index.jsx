@@ -23,6 +23,7 @@ export default function Index({ errors, flashMessage }) {
         const data = new FormData(event.currentTarget);
         router.post('/evaluation', {
             evaluation_code: data.get('evaluation_code'),
+            evaluator_student_id: data.get('evaluator_student_id'),
             evaluator_email: data.get('evaluator_email'),
         }, {
             preserveScroll: true,
@@ -61,6 +62,17 @@ export default function Index({ errors, flashMessage }) {
                         autoFocus
                         error={!!errors.evaluation_code}
                         helperText={errors.evaluation_code}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="evaluator_student_id"
+                        label="Evaluator Student ID"
+                        name="evaluator_student_id"
+                        autoComplete="off"
+                        error={!!errors.evaluator_student_id}
+                        helperText={errors.evaluator_student_id}
                     />
                     <TextField
                         margin="normal"

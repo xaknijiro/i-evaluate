@@ -4,7 +4,6 @@ namespace App\Mail;
 
 use App\Models\EvaluationPasscode;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -23,7 +22,7 @@ class EvaluationPasscodeNotification extends Mailable
     public function __construct(
         protected EvaluationPasscode $evaluationPasscode
     ) {
-        $this->mailMessage = new MailMessage();
+        $this->mailMessage = new MailMessage;
     }
 
     /**
@@ -47,20 +46,21 @@ class EvaluationPasscodeNotification extends Mailable
         $subject = $this->evaluationPasscode->evaluationScheduleSubjectClass->subjectClass->subject;
         $assignedTo = $this->evaluationPasscode->evaluationScheduleSubjectClass->subjectClass->assignedTo;
         $passcode = $this->evaluationPasscode->code;
+
         return new Content(
             htmlString: $this->mailMessage
                 ->level('info')
-                ->greeting("Greetings!")
-                ->line("---")
+                ->greeting('Greetings!')
+                ->line('---')
                 ->line("## Your evaluation passcode is: *{$passcode}*")
                 ->lines([
-                    "---",
+                    '---',
                     "Evaluatee: ***{$assignedTo->name}***",
                     "Evaluation Code: ***{$evaluationCode}***",
                     "- Subject: {$subject->code} - {$subject->title}",
                     "- Course/Year: {$subjectClass->course->code} - {$subjectClass->year_level}",
                     "- A.Y./Semester: {$subjectClass->academic_year} - {$subjectClass->semester->title}",
-                    "---",
+                    '---',
                 ])
                 ->render()
         );

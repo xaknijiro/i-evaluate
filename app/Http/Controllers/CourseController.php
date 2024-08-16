@@ -52,7 +52,7 @@ class CourseController extends Controller
             return back()->with([
                 'i-evaluate-flash-message' => [
                     'severity' => 'error',
-                    'value' => "Invalid import template.",
+                    'value' => 'Invalid import template.',
                 ],
             ]);
         }
@@ -62,7 +62,7 @@ class CourseController extends Controller
             $department = $this->departmentModel->newQuery()
                 ->where('code', $row[2])
                 ->first();
-            if (!$department) {
+            if (! $department) {
                 continue;
             }
             $data[] = [
@@ -84,7 +84,7 @@ class CourseController extends Controller
 
         Session::flash('i-evaluate-flash-message', [
             'severity' => 'success',
-            'value' => "Import success.",
+            'value' => 'Import success.',
         ]);
 
         // return redirect()->route('courses.list')->with([

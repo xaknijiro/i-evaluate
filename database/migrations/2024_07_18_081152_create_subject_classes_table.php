@@ -22,6 +22,7 @@ return new class extends Migration
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
+            $table->string('section');
             $table->foreignIdFor(Subject::class)
                 ->constrained()
                 ->onUpdate('cascade')
@@ -31,12 +32,15 @@ return new class extends Migration
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->tinyInteger('year_level');
+            $table->string('schedule')->nullable();
             $table->unsignedBigInteger('assigned_to');
             $table->foreign('assigned_to')
                 ->references('id')
                 ->on((new User)->getTable())
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
+            $table->string('batch_import_reference')->nullable();
+            $table->unique(['academic_year', 'semester_id', 'section', 'subject_id'], 'unique_subject_class');
             $table->timestamps();
         });
     }

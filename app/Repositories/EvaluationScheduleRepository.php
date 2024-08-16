@@ -53,4 +53,9 @@ class EvaluationScheduleRepository
             ])
             ->first();
     }
+
+    public function save(array $data): EvaluationSchedule
+    {
+        return $this->evaluationSchedule->newQuery()->create($data);
+    }
 }

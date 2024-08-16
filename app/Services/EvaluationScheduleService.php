@@ -6,8 +6,6 @@ use App\Models\EvaluationSchedule;
 use App\Models\User;
 use App\Repositories\EvaluationScheduleRepository;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EvaluationScheduleService
 {
@@ -16,31 +14,42 @@ class EvaluationScheduleService
         protected User $userModel
     ) {}
 
+    public function create(array $data): EvaluationSchedule
+    {
+        return $this->evaluationScheduleRepository->save($data);
+    }
+
     public function getLatestEvaluationSchedule(): ?EvaluationSchedule
     {
         $latestEvaluationSchedule = $this->evaluationScheduleRepository->getLatestEvaluationSchedule();
 
         if ($latestEvaluationSchedule) {
             $latestEvaluationSchedule->evaluatees = $latestEvaluationSchedule->subjectClasses
-            ->groupBy('assigned_to')
-            ->map(fn ($group) => $group->first()->assignedTo)
-            ->values();
+                ->groupBy('assigned_to')
+                ->map(fn ($group) => $group->first()->assignedTo)
+                ->values();
         }
-        
+
         return $latestEvaluationSchedule;
     }
 
     public function getEvaluatees(EvaluationSchedule $evaluationSchedule)
     {
-        $perPage = 5;
-
-        $evaluatees = $this->userModel
+        return $this->userModel
             ->newQuery()
             ->with([
                 'subjectClasses.subject',
                 'subjectClasses.course',
                 'subjectClasses.evaluationSchedule',
-                'subjectClasses.evaluationScheduleSubjectClass.evaluationResult',
+                'subjectClasses.evaluationScheduleSubjectClass' => function ($query) {
+                    $query->with(['evaluationPasscodes', 'evaluationResult']);
+                    $query->withCount([
+                        'evaluationPasscodes',
+                        'evaluationPasscodes as evaluation_passcodes_count_submitted' => function ($query) {
+                            $query->where('submitted', 1);
+                        },
+                    ]);
+                },
             ])
             ->whereHas('subjectClasses.evaluationSchedule', function (Builder $query) use ($evaluationSchedule) {
                 $relationTable = $query->getModel()->getTable();
@@ -67,8 +76,6 @@ class EvaluationScheduleService
             ])
             ->orderBy('last_name')
             ->orderBy('first_name')
-            ->paginate($perPage);
-
-        return $evaluatees;
+            ->get();
     }
 }

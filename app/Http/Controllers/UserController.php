@@ -3,17 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
+use App\Models\Department;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 
 class UserController extends Controller
 {
     public function __construct(
-        protected User $userModel
-    ) {
-        
-    }
+        protected User $userModel,
+        protected Department $departmentModel
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -44,7 +45,69 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $filename = $request->file('users');
+        $fileHandle = fopen($filename, 'r');
+        $headers = fgetcsv($fileHandle);
+
+        if ([
+            'ID',
+            'LAST NAME',
+            'FIRST NAME',
+            'GENDER',
+            'EMAIL',
+            'DEPARTMENT CODE',
+        ] !== $headers) {
+            return back()->with([
+                'i-evaluate-flash-message' => [
+                    'severity' => 'error',
+                    'value' => 'Invalid import template.',
+                ],
+            ]);
+        }
+
+        $data = [];
+        $userDepartments = [];
+        while ($row = fgetcsv($fileHandle)) {
+            $department = $this->departmentModel->newQuery()
+                ->where('code', $row[5])
+                ->first();
+            if (! $department) {
+                continue;
+            }
+            $data[] = [
+                'institution_id' => $row[0],
+                'last_name' => $row[1],
+                'first_name' => $row[2],
+                'gender' => $row[3],
+                'email' => $row[4],
+                'password' => '',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+            $userDepartments[$row[0]] = $department->id;
+        }
+        fclose($fileHandle);
+
+        $this->userModel->newQuery()
+            ->upsert(
+                $data,
+                ['institution_id', 'email'],
+                ['last_name', 'first_name', 'gender']
+            );
+
+        foreach ($userDepartments as $userInstitutionId => $departmentId) {
+            $user = $this->userModel->newQuery()
+                ->where('institution_id', $userInstitutionId)
+                ->first();
+            if ($user) {
+                $user->departments()->attach($departmentId);
+            }
+        }
+
+        Session::flash('i-evaluate-flash-message', [
+            'severity' => 'success',
+            'value' => 'Import success.',
+        ]);
     }
 
     /**

@@ -7,14 +7,12 @@ use App\Http\Requests\UpdateEvaluationResultRequest;
 use App\Models\EvaluationResult;
 use App\Models\EvaluationScheduleSubjectClass;
 use App\Services\EvaluationResultService;
-use Illuminate\Support\Facades\Log;
 
 class EvaluationResultController extends Controller
 {
     public function __construct(
         protected EvaluationResultService $evaluationResultService,
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -40,8 +38,8 @@ class EvaluationResultController extends Controller
         EvaluationScheduleSubjectClass $evaluationScheduleSubjectClass
     ) {
         if (
-            !$evaluationScheduleSubjectClass->is_open ||
-            !$evaluationScheduleSubjectClass
+            ! $evaluationScheduleSubjectClass->is_open ||
+            ! $evaluationScheduleSubjectClass
                 ->evaluationPasscodes()
                 ->where('submitted', 1)
                 ->exists()
@@ -50,7 +48,7 @@ class EvaluationResultController extends Controller
                 'i-evaluate-flash-message',
                 [
                     'severity' => 'warning',
-                    'value' => "Evaluation already closed.",
+                    'value' => 'Evaluation already closed.',
                 ]
             );
         }

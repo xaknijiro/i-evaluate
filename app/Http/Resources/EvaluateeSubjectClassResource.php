@@ -11,9 +11,11 @@ class EvaluateeSubjectClassResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'section' => $this->section,
             'subject' => SubjectResource::make($this->subject),
             'course' => CourseResource::make($this->course),
             'year_level' => $this->year_level,
+            'schedule' => $this->schedule,
             'evaluation' => EvaluationResource::make($this->evaluationScheduleSubjectClass),
         ];
     }

@@ -13,10 +13,12 @@ use App\Http\Controllers\EvaluationResultController;
 use App\Http\Controllers\EvaluationScheduleController;
 use App\Http\Controllers\EvaluationScheduleEvaluateeController;
 use App\Http\Controllers\EvaluationScheduleSubjectClassController;
+use App\Http\Controllers\EvaluationScheduleSubjectClassRosterController;
 use App\Http\Controllers\StaticPageController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\UserController;
 use App\Models\EvaluationScheduleSubjectClass;
+use App\Models\User;
 use App\Services\EvaluationResultService;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
@@ -67,8 +69,15 @@ Route::middleware('auth')->group(function () {
 
     Route::group(['prefix' => '/evaluation-schedules'], static function () {
         Route::get('/', [EvaluationScheduleController::class, 'index']);
+        Route::post('/', [EvaluationScheduleController::class, 'store']);
+        Route::delete('/{evaluationSchedule}', [EvaluationScheduleController::class, 'destroy']);
         Route::group(['prefix' => '{evaluationSchedule}/evaluatees'], static function () {
             Route::get('/', [EvaluationScheduleEvaluateeController::class, 'index']);
+            Route::post('/', [EvaluationScheduleEvaluateeController::class, 'store']);
+        });
+        Route::group(['prefix' => '{evaluationSchedule}/subject-classes/{evaluationScheduleSubjectClass}/class-rosters'], static function () {
+            Route::get('/', [EvaluationScheduleSubjectClassRosterController::class, 'index']);
+            Route::post('/', [EvaluationScheduleSubjectClassRosterController::class, 'store']);
         });
     });
 
@@ -92,7 +101,7 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{criterion}', [EvaluationFormCriterionController::class, 'destroy']);
         });
     });
-    
+
     Route::group(['prefix' => '/departments', 'middleware' => ['role:Evaluation Manager']], static function () {
         Route::get('/', [DepartmentController::class, 'index']);
         Route::post('/', [DepartmentController::class, 'store']);
@@ -109,7 +118,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::group(['prefix' => '/users', 'middleware' => ['role:Evaluation Manager']], static function () {
-        Route::get('/', [UserController::class, 'index']);
+        Route::get('/', [UserController::class, 'index'])->name('users.list');
         Route::post('/', [UserController::class, 'store']);
     });
 
@@ -118,6 +127,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/courses', [CourseController::class, 'downloadTemplate']);
         Route::get('/subjects', [SubjectController::class, 'downloadTemplate']);
         Route::get('/users', [UserController::class, 'downloadTemplate']);
+        Route::get('/classes', [EvaluationScheduleEvaluateeController::class, 'downloadTemplate']);
     });
 
     Route::get('/about', [StaticPageController::class, 'about']);
@@ -133,5 +143,11 @@ Route::get('/test-email', function () {
 
 Route::get('/test-calculate-evaluation-result/{id}', function ($id) {
     $x = resolve(EvaluationResultService::class);
+
     return $x->calculate(EvaluationScheduleSubjectClass::find($id));
+});
+
+Route::get('/test-user-departments', function () {
+    $user = User::find(1);
+    echo $user->departments;
 });

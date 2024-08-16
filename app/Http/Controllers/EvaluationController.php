@@ -35,11 +35,13 @@ class EvaluationController extends Controller
     {
         $request->validate([
             'evaluation_code' => 'required|exists:evaluation_schedule_subject_class,code',
+            'evaluator_student_id' => 'required',
             'evaluator_email' => 'required|email',
         ]);
 
-        $attributes = $request->only(['evaluation_code', 'evaluator_email', 'passcode']);
+        $attributes = $request->only(['evaluation_code', 'evaluator_student_id', 'evaluator_email']);
         $code = $attributes['evaluation_code'];
+        $evaluatorStudentId = $attributes['evaluator_student_id'];
         $evaluatorEmail = $attributes['evaluator_email'];
 
         $evaluationScheduleSubjectClass = $this->evaluationScheduleSubjectClassModel->newQuery()
@@ -53,16 +55,23 @@ class EvaluationController extends Controller
             ->first();
 
         $evaluator = $this->evaluationPasscode->newQuery()
-            ->firstOrCreate(
-                [
-                    'evaluation_schedule_subject_class_id' => $evaluationScheduleSubjectClass->id,
-                    'email' => $evaluatorEmail,
-                ],
-                [
-                    'code' => $evaluationScheduleSubjectClass->id.'-'.Str::random(8),
-                    'expires_at' => now()->addMinutes(30),
-                ]
-            );
+            ->where([
+                'evaluation_schedule_subject_class_id' => $evaluationScheduleSubjectClass->id,
+                'institution_id' => $evaluatorStudentId,
+            ])
+            ->first();
+
+        if (! $evaluator) {
+            return redirect()
+                ->route('evaluation')
+                ->with(
+                    'i-evaluate-flash-message',
+                    [
+                        'severity' => 'warning',
+                        'value' => "You are not eligible to evaluate $code using $evaluatorStudentId.",
+                    ]
+                );
+        }
 
         if ($evaluator->submitted) {
             return redirect()
@@ -71,9 +80,28 @@ class EvaluationController extends Controller
                     'i-evaluate-flash-message',
                     [
                         'severity' => 'warning',
-                        'value' => "Already evaluated $code using email $evaluatorEmail.",
+                        'value' => "Evaluator student ID: $evaluatorStudentId has already submitted evaluation for: $code.",
                     ]
                 );
+        }
+
+        if ($evaluator->email) {
+            if ($evaluator->email !== $evaluatorEmail) {
+                return redirect()
+                    ->route('evaluation')
+                    ->with(
+                        'i-evaluate-flash-message',
+                        [
+                            'severity' => 'warning',
+                            'value' => 'Already been taken...',
+                        ]
+                    );
+            }
+        } else {
+            $evaluator->update([
+                'email' => $evaluatorEmail,
+                'code' => "{$evaluator->id}".Str::upper(Str::random(4)),
+            ]);
         }
 
         $request->session()->put('evaluator_email', $evaluatorEmail);

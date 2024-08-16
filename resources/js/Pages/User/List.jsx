@@ -44,8 +44,14 @@ const List = ({ errors, users }) => {
 
     const columns = [
         {
+            field: 'institution_id',
+            flex: 0.5,
+            headerName: 'ID',
+            sortable: false,
+        },
+        {
             field: 'last_name',
-            flex: 0.25,
+            flex: 0.5,
             headerName: 'Last Name',
             sortable: false,
         },
@@ -55,13 +61,27 @@ const List = ({ errors, users }) => {
             headerName: 'First Name',
             sortable: false,
         },
+        {
+            field: 'gender',
+            flex: 0.25,
+            headerName: 'Gender',
+            sortable: false,
+        },
+        {
+            field: 'department',
+            flex: 1,
+            headerName: 'Department',
+            sortable: false,
+            valueGetter: (cell) => cell.row.department
+                ? `${cell.row.department.code} - ${cell.row.department.title}`
+                : '-',
+        },
     ];
 
     const handleImport = (event) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         const formJson = Object.fromEntries(formData.entries());
-        console.log(formJson);
         router.post(`/users`, formJson, {
             preserveScroll: true,
             preserveState: false,

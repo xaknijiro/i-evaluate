@@ -14,8 +14,7 @@ class EvaluationResultService
     public function __construct(
         protected EvaluationResponse $evaluationResponse,
         protected EvaluationResultRepository $evaluationResultRepository,
-    ) {
-    }
+    ) {}
 
     public function calculate(EvaluationScheduleSubjectClass $evaluationScheduleSubjectClass)
     {
@@ -41,7 +40,7 @@ class EvaluationResultService
         });
 
         $criteriaResult = $evaluationForm->criteria->mapWithKeys(function (Criterion $criterion) use ($responsesByIndicatorAveScore, $indicatorMaxScore) {
-            $indicatorsResult = $criterion->indicators->mapWithKeys(function (Indicator $indicator) use ($responsesByIndicatorAveScore, $indicatorMaxScore) {
+            $indicatorsResult = $criterion->indicators->mapWithKeys(function (Indicator $indicator) use ($responsesByIndicatorAveScore) {
                 return [
                     $indicator->id => $responsesByIndicatorAveScore->get($indicator->id) ?? collect([
                         'ave_score' => 0,
@@ -71,7 +70,7 @@ class EvaluationResultService
             'details' => json_encode([
                 'criteria' => $criteriaResult,
                 'overall_score' => round($criteriaResult->sum('weighted_score'), 2),
-            ])
+            ]),
         ];
 
         $this->evaluationResultRepository->saveCalculationResult([

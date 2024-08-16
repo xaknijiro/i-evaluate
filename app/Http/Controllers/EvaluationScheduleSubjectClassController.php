@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateEvaluationScheduleSubjectClassRequest;
 use App\Mail\EvaluationCompleteNotification;
-use App\Mail\EvaluationPasscodeNotification;
 use App\Models\EvaluationPasscode;
 use App\Models\EvaluationResponse;
 use App\Models\EvaluationScheduleSubjectClass;

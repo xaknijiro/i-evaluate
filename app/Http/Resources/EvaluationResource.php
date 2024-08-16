@@ -13,8 +13,11 @@ class EvaluationResource extends JsonResource
             'id' => $this->id,
             'code' => $this->code,
             'is_open' => $this->is_open,
+            'evaluators' => $this->evaluationPasscodes,
+            'evaluators_count' => $this->evaluation_passcodes_count,
+            'evaluators_count_submitted' => $this->evaluation_passcodes_count_submitted,
             'result' => $this->when(
-                !$this->is_open && $this->evaluationResult,
+                ! $this->is_open && $this->evaluationResult,
                 EvaluationResultResource::make($this->evaluationResult)
             ),
         ];

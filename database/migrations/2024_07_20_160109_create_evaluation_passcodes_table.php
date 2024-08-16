@@ -18,14 +18,19 @@ return new class extends Migration
                 ->on('evaluation_schedule_subject_class')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->string('email');
-            $table->string('code')->unique();
+            $table->string('institution_id');
+            $table->string('email')->nullable();
+            $table->string('code')->nullable()->unique();
             $table->timestamp('expires_at');
             $table->boolean('submitted')->default(false);
             $table->unique([
                 'evaluation_schedule_subject_class_id',
+                'institution_id',
+            ], 'unique_evaluation_subject_class_institution_id');
+            $table->unique([
+                'evaluation_schedule_subject_class_id',
                 'email',
-            ], 'evaluation_schedule_subject_class_evaluator_email_unique');
+            ], 'unique_evaluation_subject_class_email');
             $table->timestamps();
         });
     }

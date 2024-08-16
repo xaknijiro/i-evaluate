@@ -42,6 +42,6 @@ class EvaluationScheduleSubjectClass extends Pivot
 
     public function evaluationResult(): HasOne
     {
-        return $this->hasOne(EvaluationResult::class, 'evaluation_schedule_subject_class_id');        
+        return $this->hasOne(EvaluationResult::class, 'evaluation_schedule_subject_class_id');
     }
 }

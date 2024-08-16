@@ -7,16 +7,13 @@ use App\Http\Requests\UpdateDepartmentRequest;
 use App\Http\Resources\DepartmentResource;
 use App\Models\Department;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class DepartmentController extends Controller
 {
     public function __construct(
         protected Department $departmentModel
-    ) {
-        
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.
