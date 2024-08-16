@@ -110,7 +110,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                     field: 'evaluation_code',
                                     headerName: 'Evaluation Code',
                                     width: 150,
-                                    valueGetter: (cell) => cell.row.evaluation.code,
+                                    valueGetter: (cell) => cell.row.evaluation?.code,
                                 },
                                 {
                                     field: 'section',
@@ -145,7 +145,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                     width: 150,
                                     renderCell: (cell) => {
                                         const { evaluation } = cell.row;
-                                        const { evaluators_count: evaluatorsCount, evaluators_count_submitted: evaluatorsCountSubmitted } = evaluation;
+                                        const { evaluators_count: evaluatorsCount, evaluators_count_submitted: evaluatorsCountSubmitted } = evaluation || {};
                                         return <Gauge
                                             height={100}
                                             value={evaluatorsCountSubmitted}
