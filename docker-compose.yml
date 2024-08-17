@@ -25,6 +25,7 @@ services:
       mailpit:
     ports:
       - "8080:80"
+      - "5173:5173"
     tty: true
     volumes:
       - '.:/var/www/html'
