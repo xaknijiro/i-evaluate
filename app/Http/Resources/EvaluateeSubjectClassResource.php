@@ -16,6 +16,8 @@ class EvaluateeSubjectClassResource extends JsonResource
             'course' => CourseResource::make($this->course),
             'year_level' => $this->year_level,
             'schedule' => $this->schedule,
+            'academic_year' => $this->academic_year,
+            'semester' => $this->semester->title,
             'evaluation' => EvaluationResource::make($this->evaluationScheduleSubjectClass),
         ];
     }

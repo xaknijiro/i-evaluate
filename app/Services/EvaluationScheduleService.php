@@ -6,6 +6,7 @@ use App\Models\EvaluationSchedule;
 use App\Models\User;
 use App\Repositories\EvaluationScheduleRepository;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class EvaluationScheduleService
 {
@@ -35,9 +36,15 @@ class EvaluationScheduleService
 
     public function getEvaluatees(EvaluationSchedule $evaluationSchedule)
     {
-        return $this->userModel
-            ->newQuery()
-            ->with([
+        $isEvaluationManager = Auth::user()->hasRole('Evaluation Manager');
+
+        $query = $this->userModel->newQuery();
+
+        if (!$isEvaluationManager) {
+            $query->where('id', Auth::id());
+        }
+
+        return $query->with([
                 'subjectClasses.subject',
                 'subjectClasses.course',
                 'subjectClasses.evaluationSchedule',

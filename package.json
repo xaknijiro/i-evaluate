@@ -21,6 +21,7 @@
         "@mui/x-date-pickers": "^7.12.1",
         "@vitejs/plugin-react": "^4.2.1",
         "dayjs": "^1.11.12",
-        "lodash": "^4.17.21"
+        "lodash": "^4.17.21",
+        "react-to-pdf": "^1.0.1"
     }
 }

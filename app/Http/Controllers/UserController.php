@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\DepartmentResource;
 use App\Http\Resources\UserResource;
 use App\Models\Department;
 use App\Models\User;
+use App\Services\DepartmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
@@ -13,7 +15,8 @@ class UserController extends Controller
 {
     public function __construct(
         protected User $userModel,
-        protected Department $departmentModel
+        protected Department $departmentModel,
+        protected DepartmentService $departmentService
     ) {}
 
     /**
@@ -121,9 +124,13 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(User $user)
     {
-        //
+        $departments = $this->departmentService->getDepartments();
+        return Inertia::render('User/Edit', [
+            'departments' => DepartmentResource::collection($departments),
+            'user' => UserResource::make($user),
+        ]);
     }
 
     /**

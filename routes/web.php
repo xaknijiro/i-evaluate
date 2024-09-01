@@ -67,6 +67,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
+    Route::get('/profile/{user}', [UserController::class, 'edit'])->name('profile.edit');
+
     Route::group(['prefix' => '/evaluation-schedules'], static function () {
         Route::get('/', [EvaluationScheduleController::class, 'index']);
         Route::post('/', [EvaluationScheduleController::class, 'store']);

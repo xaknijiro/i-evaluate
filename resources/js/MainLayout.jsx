@@ -23,7 +23,7 @@ const MainLayout = ({ children, title }) => {
 
     const { auth, flashMessage } = usePage().props;
     const { roles } = auth;
-    const { email, name } = auth;
+    const { id, email, name } = auth;
     const [openAppDrawer, setOpenAppDrawer] = React.useState(false);
     const [openUserDrawer, setOpenUserDrawer] = React.useState(false);
     const [currentFlashMessage, setCurrentFlashMessage] = React.useState(flashMessage);
@@ -189,7 +189,7 @@ const MainLayout = ({ children, title }) => {
             </Box>
             <List>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={routeToPage()}>
+                    <ListItemButton onClick={routeToPage(`profile/${id}`)}>
                         <ListItemIcon>
                             <Description />
                         </ListItemIcon>

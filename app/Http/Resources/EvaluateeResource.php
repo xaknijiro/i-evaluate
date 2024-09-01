@@ -11,10 +11,12 @@ class EvaluateeResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'institution_id' => $this->institution_id,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
             'name' => $this->name,
             'email' => $this->email,
+            'department' => $this->when($this->departments->first(), DepartmentResource::make($this->departments->first())),
             'subject_classes_count' => $this->subject_classes_count,
             'subject_classes_count_open' => $this->subject_classes_count_open,
             'subject_classes_count_closed' => $this->subject_classes_count_closed,

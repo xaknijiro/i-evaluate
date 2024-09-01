@@ -14,6 +14,8 @@ class EvaluationScheduleResource extends JsonResource
             'academic_year' => $this->academic_year,
             'semester' => $this->semester->title,
             'is_open' => $this->is_open,
+            'evaluation_type' => EvaluationTypeResource::make($this->evaluationType),
+            'evaluation_form' => EvaluationFormResource::make($this->evaluationForm),
         ];
     }
 }

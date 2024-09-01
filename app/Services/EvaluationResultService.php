@@ -33,8 +33,15 @@ class EvaluationResultService
         $responsesByIndicatorAveScore = $responsesGroupByIndicator->mapWithKeys(function (Collection $responses, $indicatorId) {
             return [
                 $indicatorId => collect([
+                    'id' => $indicatorId,
                     'ave_score' => $responses->average('value'),
                     'respondents' => $responses->count(),
+                    'tally' => $responses->groupBy('value')->values()->map(function ($group) {
+                        return [
+                            'value' => $group->first()->value,
+                            'count' => $group->count(),
+                        ];
+                    }),
                 ]),
             ];
         });
@@ -56,6 +63,7 @@ class EvaluationResultService
 
             return [
                 $criterion->id => collect([
+                    'id' => $criterion->id,
                     'indicators' => $indicatorsResult,
                     'total_score' => $totalScore,
                     'total_max_score' => $totalMaxScore,

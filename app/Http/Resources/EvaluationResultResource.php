@@ -11,6 +11,7 @@ class EvaluationResultResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'evaluation_schedule_subject_class_id' => $this->evaluation_schedule_subject_class_id,
             'details' => $this->details,
             'remarks' => $this->remarks,
             'is_released' => $this->is_released,
