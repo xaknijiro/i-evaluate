@@ -1,11 +1,11 @@
-import { Accordion, AccordionDetails, AccordionSummary, AppBar, Badge, Box, Button, Chip, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormLabel, Grid, IconButton, Link, Paper, Rating, Stack, styled, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField, Toolbar, Typography, useTheme } from "@mui/material";
-import { Apartment, ArrowDownward, Calculate, CardMembership, Check, Close, CloudUpload, Description, Email, Event, HourglassTop, Password, People, Percent, PersonPin, PictureAsPdf, School, Score, Subject, ViewAgenda } from "@mui/icons-material";
+import { Accordion, AccordionDetails, AccordionSummary, AppBar, Badge, Box, Button, Chip, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormLabel, Grid, IconButton, InputAdornment, Link, Paper, Rating, Stack, styled, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField, Toolbar, Typography, useTheme } from "@mui/material";
+import { AccountCircle, Apartment, ArrowDownward, Calculate, CardMembership, Check, Close, CloudUpload, Description, Email, Event, HourglassTop, Password, People, Percent, PersonPin, PictureAsPdf, School, Score, Subject, ViewAgenda } from "@mui/icons-material";
 import React, { useCallback, useMemo, useRef } from 'react';
-import { router, useForm } from "@inertiajs/react";
+import { router, useForm, usePage } from "@inertiajs/react";
 import MainLayout from "../../../MainLayout";
 import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
 import { BarChart, Gauge } from "@mui/x-charts";
-import { find, sortBy } from "lodash";
+import { find, includes, sortBy } from "lodash";
 import { Margin } from "react-to-pdf";
 import generatePDF from "react-to-pdf";
 
@@ -32,6 +32,10 @@ const VisuallyHiddenInput = styled('input')({
 
 const List = ({ errors, evaluationSchedule, evaluatees }) => {
     const theme = useTheme();
+
+    const { auth, filters } = usePage().props;
+    const { roles } = auth;
+
     const { id, academic_year: academicYear, semester, evaluation_type: evaluationType, evaluation_form: evaluationForm, is_open: evaluationScheduleIsOpen } = evaluationSchedule.data;
     const { likert_scale: likertScale } = evaluationForm || {};
     const { default_options: likertScaleOptions } = likertScale || {};
@@ -71,6 +75,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
         class_roster: null,
     });
 
+    const targetRefQuickSearch = useRef();
     const targetRefEvaluationClassRoster = useRef();
     const targetRefEvaluationResultPerClass = useRef();
     const targetRefEvaluationResultSummary = useRef();
@@ -237,7 +242,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                     </Grid>
 
                     <Grid container spacing={1} sx={{ mt: 1 }}>
-                        <Grid item md={!evaluateeSubjectClassEvaluationIsOpen ? 12 : 6} sm={12} xs={12}>
+                        <Grid item md={!evaluateeSubjectClassEvaluationIsOpen ? 12 : (!includes(roles, 'Evaluation Manager') ? 12 : 6)} sm={12} xs={12}>
                             <TableContainer component={Paper} variant="outlined">
                                 <Table size="small">
                                     <TableHead>
@@ -259,7 +264,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                 </Table>
                             </TableContainer>
                         </Grid>
-                        {evaluateeSubjectClassEvaluationIsOpen && <Grid item md={6} sm={12} xs={12}>
+                        {includes(roles, 'Evaluation Manager') && evaluateeSubjectClassEvaluationIsOpen && <Grid item md={6} sm={12} xs={12}>
                             <Paper variant="outlined" sx={{ p: 2 }}>
                                 <FormLabel>Enter student ID separated by line break.</FormLabel>
                                 <TextField
@@ -712,7 +717,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                         weight: criterionWeight,
                                         weighted_rating: criterionWeightedRating
                                     } = criterionResultSummary;
-                                    return <TableRow key={criterion.id}>
+                                    return <TableRow key={`${evaluatee.id}-${criterion.id}`}>
                                         <TableCell>{criterion.description}</TableCell>
                                         {subjectClassesEvaluated.map((subjectClass) => {
                                             const { evaluation } = subjectClass;
@@ -749,7 +754,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
     return (
         <>
             <Grid container spacing={1} sx={{ mb: 4 }}>
-                <Grid item md={8} sm={12} xs={12}>
+                <Grid item md={includes(roles, 'Evaluation Manager') && !evaluationScheduleIsOpen ? 12 : 8} sm={12} xs={12}>
                     <Paper sx={{ padding: 2, backgroundColor: "burlywood" }}>
                         <Typography>Semester/A.Y.</Typography>
                         <Typography>{semester}/{academicYear}</Typography>
@@ -757,7 +762,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                         <Link onClick={() => window.history.back()}>Back</Link>
                     </Paper>
                 </Grid>
-                <Grid item md={4} sm={12} xs={12}>
+                {includes(roles, 'Evaluation Manager') && evaluationScheduleIsOpen && <Grid item md={4} sm={12} xs={12}>
                     <Paper variant="outlined" sx={{ p: 2}}>
                         <Box component="form" marginBottom={2} onSubmit={handleImport}>
                             <Stack spacing={2}>
@@ -790,8 +795,22 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                             Dowload Template
                         </Link>
                     </Paper>
-                </Grid>
+                </Grid>}
             </Grid>
+
+            {includes(roles, 'Evaluation Manager') && <TextField
+                defaultValue={filters?.search || ''}
+                inputRef={targetRefQuickSearch}
+                fullWidth
+                label="Quick Search"
+                onKeyUp={(e) => {
+                    if (e.key === 'Enter') {
+                        router.get(`/evaluation-schedules/${id}/evaluatees`, { search: targetRefQuickSearch.current.value }, { preserveScroll: true });    
+                    }
+                }}
+                variant="outlined"
+                sx={{ mb: 4 }}
+            />}
             
             {evaluatees.data.map((evaluatee) => <Accordion key={evaluatee.id}>
                 <AccordionSummary
@@ -893,14 +912,16 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                         let actions = [];
 
                                         if (evaluation) {
-                                            if (evaluation.is_open) {
+                                            if (includes(roles, 'Evaluation Manager') && evaluation.is_open) {
                                                 actions.push(<GridActionsCellItem
                                                     icon={<Calculate />}
                                                     label="Calculate Result"
                                                     onClick={() => handleCalculateResult(params)}
                                                     showInMenu
                                                 />);
-                                            } else {
+                                            } 
+                                            
+                                            if (!evaluation.is_open) {
                                                 actions.push(<GridActionsCellItem
                                                     icon={<ViewAgenda />}
                                                     label="View Result"

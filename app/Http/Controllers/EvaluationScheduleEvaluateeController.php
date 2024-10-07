@@ -30,13 +30,15 @@ class EvaluationScheduleEvaluateeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(EvaluationSchedule $evaluationSchedule)
+    public function index(Request $request, EvaluationSchedule $evaluationSchedule)
     {
-        $evaluationScheduleEvaluatees = $this->evaluationScheduleService->getEvaluatees($evaluationSchedule);
+        $filters = $request->all();
+        $evaluationScheduleEvaluatees = $this->evaluationScheduleService->getEvaluatees($evaluationSchedule, $filters);
 
         return Inertia::render('EvaluationSchedule/Evaluatee/List', [
             'evaluationSchedule' => EvaluationScheduleResource::make($evaluationSchedule),
             'evaluatees' => EvaluateeResource::collection($evaluationScheduleEvaluatees),
+            'filters' => $filters,
         ]);
     }
 

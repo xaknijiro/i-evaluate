@@ -36,7 +36,7 @@ class EvaluationScheduleFakeSeeder extends Seeder
             ->whereInstanceOf(EvaluationSchedule::class)
             ->each(function (EvaluationSchedule $evaluationSchedule) use ($faker) {
                 $subjectClasses = SubjectClass::factory()
-                    ->count(100)
+                    ->count(200)
                     ->sequence(fn ($sequence) => [
                         'section' => Str::random(8).'-'.$sequence->index,
                         'subject_id' => Subject::all()->random()->id,
@@ -61,7 +61,7 @@ class EvaluationScheduleFakeSeeder extends Seeder
                             ]);
 
                         $evaluations = EvaluationPasscode::factory()
-                            ->count(10)
+                            ->count(15)
                             ->sequence(fn ($sequence) => [
                                 'email' => $faker->email.$sequence->index,
                                 'code' => $evaluationSchedule->id.'-'.$subjectClass->id.'-'.Str::random(8),

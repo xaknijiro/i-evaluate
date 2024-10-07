@@ -17,7 +17,7 @@ class UserFakeSeeder extends Seeder
         Department::all()->each(function (Department $department) {
             User::factory()
                 ->hasAttached($department)
-                ->count(10)->create([
+                ->count(20)->create([
                     'password' => Hash::make('123456'),
                 ]);
         });

@@ -34,7 +34,7 @@ class EvaluationScheduleService
         return $latestEvaluationSchedule;
     }
 
-    public function getEvaluatees(EvaluationSchedule $evaluationSchedule)
+    public function getEvaluatees(EvaluationSchedule $evaluationSchedule, array $filters = [])
     {
         $isEvaluationManager = Auth::user()->hasRole('Evaluation Manager');
 
@@ -42,6 +42,15 @@ class EvaluationScheduleService
 
         if (!$isEvaluationManager) {
             $query->where('id', Auth::id());
+        }
+
+        if ($filters['search'] ?? false && !$filters['search']) {
+            $search = $filters['search'];
+            $query->where(function (Builder $query) use ($search) {
+                $query->where('last_name', 'like', "%$search%");
+                $query->orWhere('first_name', 'like', "%$search%");
+                $query->orWhere('email', 'like', "%$search%");
+            });
         }
 
         return $query->with([
