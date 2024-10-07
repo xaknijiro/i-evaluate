@@ -71,19 +71,19 @@ Route::middleware('auth')->group(function () {
 
     Route::group(['prefix' => '/evaluation-schedules'], static function () {
         Route::get('/', [EvaluationScheduleController::class, 'index']);
-        Route::post('/', [EvaluationScheduleController::class, 'store']);
-        Route::delete('/{evaluationSchedule}', [EvaluationScheduleController::class, 'destroy']);
+        Route::post('/', [EvaluationScheduleController::class, 'store'])->middleware('role:Evaluation Manager');
+        Route::delete('/{evaluationSchedule}', [EvaluationScheduleController::class, 'destroy'])->middleware('role:Evaluation Manager');
         Route::group(['prefix' => '{evaluationSchedule}/evaluatees'], static function () {
             Route::get('/', [EvaluationScheduleEvaluateeController::class, 'index']);
-            Route::post('/', [EvaluationScheduleEvaluateeController::class, 'store']);
+            Route::post('/', [EvaluationScheduleEvaluateeController::class, 'store'])->middleware('role:Evaluation Manager');
         });
         Route::group(['prefix' => '{evaluationSchedule}/subject-classes/{evaluationScheduleSubjectClass}/class-rosters'], static function () {
             Route::get('/', [EvaluationScheduleSubjectClassRosterController::class, 'index']);
-            Route::post('/', [EvaluationScheduleSubjectClassRosterController::class, 'store']);
+            Route::post('/', [EvaluationScheduleSubjectClassRosterController::class, 'store'])->middleware('role:Evaluation Manager');
         });
     });
 
-    Route::group(['prefix' => '/calculate-evaluation-result/{evaluationScheduleSubjectClass}'], static function () {
+    Route::group(['prefix' => '/calculate-evaluation-result/{evaluationScheduleSubjectClass}', 'middleware' => ['role:Evaluation Manager']], static function () {
         Route::post('/', [EvaluationResultController::class, 'store']);
     });
 

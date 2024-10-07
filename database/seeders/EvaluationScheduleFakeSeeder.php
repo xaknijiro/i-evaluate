@@ -61,7 +61,7 @@ class EvaluationScheduleFakeSeeder extends Seeder
                             ]);
 
                         $evaluations = EvaluationPasscode::factory()
-                            ->count(5)
+                            ->count(10)
                             ->sequence(fn ($sequence) => [
                                 'email' => $faker->email.$sequence->index,
                                 'code' => $evaluationSchedule->id.'-'.$subjectClass->id.'-'.Str::random(8),
