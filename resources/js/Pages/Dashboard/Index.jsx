@@ -1,140 +1,74 @@
 import _ from 'lodash';
 import MainLayout from "../../MainLayout";
-import { Accordion, AccordionDetails, AccordionSummary, Button, Typography } from "@mui/material";
-import { AccountCircle, Calculate, ExpandMore, HourglassEmpty } from "@mui/icons-material";
+import { Button, Card, CardActions, CardContent, Grid, Link, Paper, Stack, Typography } from "@mui/material";
 import React from 'react';
-import { Head, router } from "@inertiajs/react";
-import { DataGrid } from '@mui/x-data-grid';
+import { Grading, Group, PlayArrow, Queue, Subject } from '@mui/icons-material';
+import { router } from '@inertiajs/react';
 
 const Index = ({ latestEvaluationSchedule }) => {
+
     const {
+        academic_year: academicYear,
         evaluatees,
-        subject_classes: subjectClasses,
-        evaluation_schedule_subject_classes: evaluationScheduleSubjectClasses
+        semester,
+        subject_classes_count_open: subjectClassesCountOpen,
+        subject_classes_count_closed: subjectClassesCountClosed,
     } = latestEvaluationSchedule || {};
-    const subjectClassesGroupByEvaluatee = _.groupBy(subjectClasses, 'assigned_to.id');
-    const subjectClassesEvaluationDetails = _.keyBy(evaluationScheduleSubjectClasses, 'code');
 
-    console.log(subjectClassesGroupByEvaluatee);
-    console.log(subjectClassesEvaluationDetails);
+    const LatestEvaluationScheduleCard = latestEvaluationSchedule && <Card variant='outlined'>
+        <CardContent>
+            <Typography gutterBottom variant="h5">
+                Open Evaluation Period
+            </Typography>
+            <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
+                {semester.title} A.Y. {academicYear}
+            </Typography>
+            <Grid container spacing={2}>
+                <Grid item md={4}>
+                    <Paper>
+                        <Stack alignItems="center">
+                            <Group sx={{ fontSize: 100 }} />
+                            <Typography variant='h3'>
+                                {evaluatees.length}
+                            </Typography>
+                            <Typography>Instructors</Typography>
+                        </Stack>
+                    </Paper>
+                </Grid>
+                <Grid item md={4}>
+                    <Paper>
+                        <Stack alignItems="center">
+                            <Queue sx={{ fontSize: 100 }} />
+                            <Typography variant='h3'>
+                                {subjectClassesCountOpen}
+                            </Typography>
+                            <Typography>Open Subject Classes</Typography>
+                        </Stack>
+                    </Paper>
+                </Grid>
+                <Grid item md={4}>
+                    <Paper>
+                        <Stack alignItems="center">
+                            <Grading sx={{ fontSize: 100 }} />
+                            <Typography variant='h3'>
+                                {subjectClassesCountClosed}
+                            </Typography>
+                            <Typography>Closed Subject Classes</Typography>
+                        </Stack>
+                    </Paper>
+                </Grid>
+            </Grid>
 
-    const handleCalculateResult = (e, evaluationScheduleSubjectClassId) => {
-        e.preventDefault();
-        router.post(
-            `/calculate-evaluation-result/${evaluationScheduleSubjectClassId}`,
-            {},
-            {
-                preserveScroll: true,
-                preserveState: false,
-            }
-        );
-    };
+        </CardContent>
+        <CardActions>
+            <Button onClick={() => router.get(`/evaluation-schedules/${latestEvaluationSchedule.id}/evaluatees`)} size="small" startIcon={<PlayArrow />}>Continue</Button>
+        </CardActions>
+    </Card>;
 
-    const columns = [
-        {
-            field: 'code',
-            headerName: 'Evaluation Code',
-            width: 150,
-            valueGetter: (cell) => {
-                return `${cell.row.pivot.code}`;
-            },
-        },
-        {
-            field: 'subject',
-            headerName: 'Subject',
-            flex: 1,
-            valueGetter: (cell) => {
-                return `${cell.value.code} - ${cell.value.title}`;
-            },
-        },
-        {
-            field: 'course',
-            width: 150,
-            headerName: 'Course',
-            valueGetter: (cell) => {
-                return `${cell.value.code}`;
-            },
-        },
-        {
-            field: 'year_level',
-            width: 100,
-            headerName: 'Year Level',
-        },
-        {
-            field: 'respondents_submitted_count',
-            headerName: 'Respondents Submitted',
-            width: 100,
-            renderCell: (cell) => {
-                const evaluationDetails = subjectClassesEvaluationDetails[cell.row.pivot.code];
-                return evaluationDetails?.respondents_submitted_count || 0;
-            },
-        },
-        {
-            field: 'respondents_registered_count',
-            headerName: 'Respondents Registered',
-            width: 100,
-            renderCell: (cell) => {
-                const evaluationDetails = subjectClassesEvaluationDetails[cell.row.pivot.code];
-                return evaluationDetails?.respondents_count || 0;
-            },
-        },
-        {
-            field: 'overall_score',
-            headerName: 'Overall Score',
-            flex: 1,
-            renderCell: (cell) => {
-                const evaluationDetails = subjectClassesEvaluationDetails[cell.row.pivot.code];
-                const { evaluation_result: evaluationResult } = evaluationDetails;
-                const isClosed = !evaluationDetails?.is_open || false;
 
-                if (!isClosed && (evaluationDetails?.respondents_count || 0) === 0) {
-                    return <Button
-                        disabled
-                        startIcon={<HourglassEmpty />}
-                        variant="outlined"
-                    >
-                        In Progress
-                    </Button>;
-                }
-
-                return isClosed && !_.isNull(evaluationResult)
-                    ? `${evaluationResult.details.overall_score}%`
-                    : <Button
-                        onClick={(e) => handleCalculateResult(e, cell.row.pivot.id)}
-                        startIcon={<Calculate />}
-                        variant="contained"
-                    >
-                        Calculate Result
-                    </Button>;
-            },
-        },
-    ];
-
-    return (
-        <>
-            <Head>
-                <title>Dashboard</title>
-            </Head>
-            {evaluatees && evaluatees.map((evaluatee) => <Accordion>
-                <AccordionSummary
-                    expandIcon={<ExpandMore />}
-                >
-                    <AccountCircle />
-                    <Typography>{evaluatee.name}</Typography>
-                    <Typography>
-                        Scheduled Subject Classes: {subjectClassesGroupByEvaluatee[evaluatee.id].length}
-                    </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <DataGrid
-                        autoHeight
-                        columns={columns}
-                        rows={subjectClassesGroupByEvaluatee[evaluatee.id]}
-                    />
-                </AccordionDetails>
-            </Accordion>)}
-        </>
-    );
+    return <>
+        {LatestEvaluationScheduleCard}
+    </>;
 };
 
 Index.layout = page => <MainLayout children={page} title="Dashboard" />;

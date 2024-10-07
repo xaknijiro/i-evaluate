@@ -272,6 +272,7 @@ const MainLayout = ({ children, title }) => {
             </Snackbar>
 
             <Container
+                maxWidth={false}
                 sx={{ p: 2 }}
             >
                 {children}

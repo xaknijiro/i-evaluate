@@ -143,10 +143,10 @@ Route::get('/test-email', function () {
     });
 });
 
-Route::get('/test-calculate-evaluation-result/{id}', function ($id) {
+Route::get('/test-calculate-evaluation-result/{id}', function ($code) {
     $x = resolve(EvaluationResultService::class);
 
-    return $x->calculate(EvaluationScheduleSubjectClass::find($id));
+    return $x->calculate(EvaluationScheduleSubjectClass::where('code', $code)->first());
 });
 
 Route::get('/test-user-departments', function () {

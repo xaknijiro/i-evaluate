@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Criterion;
+use App\Models\EvaluationForm;
 use App\Models\EvaluationResponse;
 use App\Models\EvaluationScheduleSubjectClass;
 use App\Models\Indicator;
@@ -20,7 +21,6 @@ class EvaluationResultService
     {
         $evaluationForm = $evaluationScheduleSubjectClass->evaluationSchedule->evaluationForm;
         $evaluationForm->loadMissing(['criteria.indicators', 'likertScale']);
-        $indicatorMaxScore = $evaluationForm->likertScale->max_score;
 
         $indicatorIds = $evaluationForm->criteria->pluck('indicators')->flatten()->pluck('id')->toArray();
 
@@ -31,53 +31,67 @@ class EvaluationResultService
             ->groupBy('indicator_id');
 
         $responsesByIndicatorAveScore = $responsesGroupByIndicator->mapWithKeys(function (Collection $responses, $indicatorId) {
+            $indicatorCalculation = [
+                'id' => $indicatorId,
+                'tally' => $responses->groupBy('value')->values()->map(function ($group) {
+                    $rating = $group->first()->value;
+                    $count = $group->count();
+
+                    return [
+                        'value' => $rating,
+                        'count' => $count,
+                        'points' => $rating * $count,
+                    ];
+                }),
+            ];
+            $tally = collect($indicatorCalculation['tally']);
+            $totalPoints = $tally->sum('points');
+            $responses = $tally->sum('count');
+            $indicatorRating = round($totalPoints / $responses, 2);
+            $indicatorCalculation['total_points'] = $totalPoints;
+            $indicatorCalculation['responses'] = $responses;
+            $indicatorCalculation['rating'] = $indicatorRating;
+
             return [
-                $indicatorId => collect([
-                    'id' => $indicatorId,
-                    'ave_score' => $responses->average('value'),
-                    'respondents' => $responses->count(),
-                    'tally' => $responses->groupBy('value')->values()->map(function ($group) {
-                        return [
-                            'value' => $group->first()->value,
-                            'count' => $group->count(),
-                        ];
-                    }),
-                ]),
+                $indicatorId => collect($indicatorCalculation),
             ];
         });
 
-        $criteriaResult = $evaluationForm->criteria->mapWithKeys(function (Criterion $criterion) use ($responsesByIndicatorAveScore, $indicatorMaxScore) {
+        $criteriaResult = $evaluationForm->criteria->mapWithKeys(function (Criterion $criterion) use ($responsesByIndicatorAveScore) {
             $indicatorsResult = $criterion->indicators->mapWithKeys(function (Indicator $indicator) use ($responsesByIndicatorAveScore) {
                 return [
-                    $indicator->id => $responsesByIndicatorAveScore->get($indicator->id) ?? collect([
-                        'ave_score' => 0,
-                        'respondents' => 0,
-                    ]),
+                    $indicator->id => $responsesByIndicatorAveScore->get($indicator->id) ?? collect(),
                 ];
             });
 
-            $totalScore = round($indicatorsResult->sum('ave_score'), 2);
-            $totalMaxScore = $indicatorsResult->count() * $indicatorMaxScore;
-            $percentage = round($totalScore / $totalMaxScore * 100, 2);
-            $weigthedScore = round($percentage * $criterion->weight, 2);
+            $totalPoints = $indicatorsResult->sum('total_points');
+            $responses = $indicatorsResult->sum('responses');
+            $criterionRating = round($totalPoints / $responses, 2);
+            $weigthedRating = round($criterionRating * $criterion->weight, 2);
 
             return [
                 $criterion->id => collect([
                     'id' => $criterion->id,
                     'indicators' => $indicatorsResult,
-                    'total_score' => $totalScore,
-                    'total_max_score' => $totalMaxScore,
-                    'percentage' => $percentage,
-                    'weighted_score' => $weigthedScore,
+                    'total_points' => $totalPoints,
+                    'responses' => $responses,
+                    'rating' => $criterionRating,
+                    'weight' => $criterion->weight,
+                    'weighted_rating' => $weigthedRating,
                 ]),
             ];
         });
+
+        $overallRating = round($criteriaResult->sum('weighted_rating'), 2);
+        [$descriptiveEquivalent, $percentileEquivalent] = $this->getDescriptiveEquivalentAndPercentileEquivalent($evaluationForm, $overallRating);
 
         $calculationResult = [
             'evaluation_schedule_subject_class_id' => $evaluationScheduleSubjectClass->id,
             'details' => json_encode([
                 'criteria' => $criteriaResult,
-                'overall_score' => round($criteriaResult->sum('weighted_score'), 2),
+                'overall_rating' => $overallRating,
+                'descriptive_equivalent' => $descriptiveEquivalent,
+                'percentile_equivalent' => $percentileEquivalent,
             ]),
         ];
 
@@ -89,5 +103,22 @@ class EvaluationResultService
         $evaluationScheduleSubjectClass->save();
 
         return $evaluationScheduleSubjectClass->evaluationResult;
+    }
+
+    public function getDescriptiveEquivalentAndPercentileEquivalent(EvaluationForm $evaluationForm, float $rating): array
+    {
+        $options = collect($evaluationForm->likertScale->default_options)->sortByDesc('value');
+        $descriptiveEquivalent = $options->filter(fn ($option) => $rating >= $option['scale_range'][0]
+            && $rating <= $option['scale_range'][1])?->first()['label'] ?? null;
+        $percentileRange = $options->filter(fn ($option) => $rating >= $option['scale_range'][0]
+            && $rating <= $option['scale_range'][1])?->first()['percentile_range'] ?? null;
+        $percentileEquivalent = $percentileRange
+            ? collect($percentileRange)->filter(fn ($p) => $rating >= $p[0][0] && $rating <= $p[0][1])?->first()[1] ?? null
+            : null;
+
+        return [
+            $descriptiveEquivalent,
+            $percentileEquivalent,
+        ];
     }
 }

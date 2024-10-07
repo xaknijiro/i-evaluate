@@ -34,8 +34,6 @@ class EvaluationScheduleEvaluateeController extends Controller
     {
         $evaluationScheduleEvaluatees = $this->evaluationScheduleService->getEvaluatees($evaluationSchedule);
 
-        //return $evaluationScheduleEvaluatees;
-
         return Inertia::render('EvaluationSchedule/Evaluatee/List', [
             'evaluationSchedule' => EvaluationScheduleResource::make($evaluationSchedule),
             'evaluatees' => EvaluateeResource::collection($evaluationScheduleEvaluatees),

@@ -17,7 +17,7 @@ class SubjectClassFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'section' => $this->faker->uuid,
         ];
     }
 }
