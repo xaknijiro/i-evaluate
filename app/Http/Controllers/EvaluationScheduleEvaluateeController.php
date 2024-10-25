@@ -33,7 +33,8 @@ class EvaluationScheduleEvaluateeController extends Controller
     public function index(Request $request, EvaluationSchedule $evaluationSchedule)
     {
         $filters = $request->all();
-        $evaluationScheduleEvaluatees = $this->evaluationScheduleService->getEvaluatees($evaluationSchedule, $filters);
+        $perPage = $request->input('per_page', 5);
+        $evaluationScheduleEvaluatees = $this->evaluationScheduleService->getEvaluatees($evaluationSchedule, $filters, $perPage);
 
         return Inertia::render('EvaluationSchedule/Evaluatee/List', [
             'evaluationSchedule' => EvaluationScheduleResource::make($evaluationSchedule),

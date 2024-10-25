@@ -61,7 +61,13 @@ const Index = ({ latestEvaluationSchedule }) => {
 
         </CardContent>
         <CardActions>
-            <Button onClick={() => router.get(`/evaluation-schedules/${latestEvaluationSchedule.id}/evaluatees`)} size="small" startIcon={<PlayArrow />}>Continue</Button>
+            <Button
+                fullWidth
+                onClick={() => router.get(`/evaluation-schedules/${latestEvaluationSchedule.id}/evaluatees`)}
+                size="large"
+                startIcon={<PlayArrow />}
+                variant="contained"
+            >Continue</Button>
         </CardActions>
     </Card>;
 

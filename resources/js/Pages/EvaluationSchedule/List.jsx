@@ -1,7 +1,7 @@
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
 import MainLayout from "../../MainLayout";
-import { Button, FormControl, Grid, IconButton, MenuItem, Paper, Stack, TextField } from "@mui/material";
-import { Delete, FolderOpen, Lock, LockOpen } from "@mui/icons-material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, Grid, IconButton, MenuItem, Paper, Stack, TextField } from "@mui/material";
+import { Close, Delete, Folder, FolderOpen, Lock, LockOpen, People } from "@mui/icons-material";
 import React from 'react';
 import { Link, router, useForm } from "@inertiajs/react";
 import { DatePicker } from "@mui/x-date-pickers";
@@ -70,6 +70,18 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
         });
     };
 
+    const confirmDeleteEvaluationDialog = (evaluationSchedule) => {
+        return <Dialog open={true}>
+            <DialogTitle>Dave</DialogTitle>
+            <DialogContent>
+
+            </DialogContent>
+            <DialogActions>
+
+            </DialogActions>
+        </Dialog>;
+    };
+
     const columns = [
         {
             field: 'id',
@@ -136,6 +148,43 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                 </IconButton>
             </>,
         },
+        {
+            field: 'actions',
+            type: 'actions',
+            width: 100,
+            getActions: (params) => {
+                const { row } = params;
+                const { is_open: evaluationScheduleIsOpen } = row;
+
+                let actions = [
+                    <GridActionsCellItem
+                        component={Link}
+                        href={`/evaluation-schedules/${row.id}/evaluatees`}
+                        icon={<FolderOpen />}
+                        label="View Schedule"
+                        showInMenu
+                    />
+                ];
+
+                if (!!evaluationScheduleIsOpen) {
+                    actions.push(<GridActionsCellItem
+                        icon={<Lock />}
+                        label="Close Schedule"
+                        onClick={() => alert('dave')}
+                        showInMenu
+                    />);
+                }
+
+                actions.push(<GridActionsCellItem
+                    icon={<People />}
+                    label="Class Roster"
+                    onClick={() => confirmDeleteEvaluationDialog(row)}
+                    showInMenu
+                />);
+
+                return actions;
+            },
+        }
     ];
 
     return (
@@ -253,6 +302,6 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
     );
 };
 
-List.layout = page => <MainLayout children={page} title="Evaluation Forms" />;
+List.layout = page => <MainLayout children={page} title="Evaluation Schedule" />;
 
 export default List;

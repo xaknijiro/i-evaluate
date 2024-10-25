@@ -1,5 +1,5 @@
 import { router } from "@inertiajs/react";
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, ButtonGroup, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Fab, Grid, IconButton, Input, InputAdornment, Paper, Rating, Stack, TextField, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, ButtonGroup, Card, CardActions, CardContent, CardHeader, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Fab, FormControl, Grid, IconButton, Input, InputAdornment, Paper, Rating, Stack, TextField, Typography } from "@mui/material";
 import MainLayout from "../../MainLayout";
 import { Add, AddTwoTone, ArrowCircleDownTwoTone, ArrowCircleUpTwoTone, DeleteForeverTwoTone, MenuTwoTone, RemoveTwoTone } from "@mui/icons-material";
 import React from "react";
@@ -333,6 +333,21 @@ const Show = ({ errors, evaluationForm }) => {
             </>
         )
         )}
+
+        <Card sx={{ width: "50%" }}>
+            <CardContent>
+                <TextField label="Open Comment Description" variant="standard" />
+            </CardContent>
+            <CardActions>
+                <ButtonGroup>
+                    <Button>Dave</Button>
+                </ButtonGroup>
+            </CardActions>
+        </Card>
+
+        <FormControl>
+            <TextField></TextField>
+        </FormControl>
 
         <Box sx={{ display: "flex", flexDirection: "row-reverse", mt: 2 }}>
             {Boolean(evaluationForm.published) ? <ButtonGroup variant="contained">

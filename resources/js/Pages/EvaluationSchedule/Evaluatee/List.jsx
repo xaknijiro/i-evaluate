@@ -1,5 +1,5 @@
-import { Accordion, AccordionDetails, AccordionSummary, AppBar, Badge, Box, Button, Chip, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormLabel, Grid, IconButton, InputAdornment, Link, Paper, Rating, Stack, styled, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField, Toolbar, Typography, useTheme } from "@mui/material";
-import { AccountCircle, Apartment, ArrowDownward, Calculate, CardMembership, Check, Close, CloudUpload, Description, Email, Event, HourglassTop, Password, People, Percent, PersonPin, PictureAsPdf, School, Score, Subject, ViewAgenda } from "@mui/icons-material";
+import { Accordion, AccordionDetails, AccordionSummary, AppBar, Badge, Box, Button, Card, CardContent, CardHeader, Chip, Container, Dialog, Divider, FormLabel, Grid, IconButton, Link, Pagination, Paper, Rating, Stack, styled, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField, Toolbar, Typography, useTheme } from "@mui/material";
+import { Apartment, ArrowDownward, Calculate, CardMembership, Check, Close, CloudUpload, Description, Email, Event, Grading, Group, HourglassTop, Password, People, PersonPin, PictureAsPdf, Queue, School, Score, Subject, ViewAgenda } from "@mui/icons-material";
 import React, { useCallback, useMemo, useRef } from 'react';
 import { router, useForm, usePage } from "@inertiajs/react";
 import MainLayout from "../../../MainLayout";
@@ -35,6 +35,8 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
 
     const { auth, filters } = usePage().props;
     const { roles } = auth;
+
+    const { links: evaluateesPaginationLinks, meta: evaluateesPaginationMeta } = evaluatees;
 
     const { id, academic_year: academicYear, semester, evaluation_type: evaluationType, evaluation_form: evaluationForm, is_open: evaluationScheduleIsOpen } = evaluationSchedule.data;
     const { likert_scale: likertScale } = evaluationForm || {};
@@ -88,6 +90,17 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
             preserveScroll: true,
             preserveState: false,
         });
+    };
+
+    const handleEvaluateesPageChange = (_event, value) => {
+        const queryParams = new URLSearchParams(window.location.search);
+        queryParams.set('page', value);
+
+        router.get(
+            `/evaluation-schedules/${id}/evaluatees?${queryParams.toString()}`,
+            { },
+            { preserveScroll: true }
+        );
     };
 
     const handleCalculateResult = (params) => {
@@ -753,12 +766,11 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
 
     return (
         <>
-            <Grid container spacing={1} sx={{ mb: 4 }}>
+            <Grid container spacing={1} sx={{ mb: 2 }}>
                 <Grid item md={includes(roles, 'Evaluation Manager') && !evaluationScheduleIsOpen ? 12 : 8} sm={12} xs={12}>
-                    <Paper sx={{ padding: 2, backgroundColor: "burlywood" }}>
-                        <Typography>Semester/A.Y.</Typography>
-                        <Typography>{semester}/{academicYear}</Typography>
-                        <Typography>{evaluationType.title}</Typography>
+                    <Paper variant="outlined" sx={{ p: 2 }}>
+                        <Typography variant="h4">{evaluationType.title}</Typography>
+                        <Typography variant="subtitle1">{semester} A.Y. {academicYear}</Typography>
                         <Link onClick={() => window.history.back()}>Back</Link>
                     </Paper>
                 </Grid>
@@ -798,6 +810,33 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                 </Grid>}
             </Grid>
 
+            {includes(roles, 'Evaluation Manager') && <Grid container marginBottom={2} spacing={1}>
+                <Grid item md={4} sm={12} xs={12}>
+                    <Card variant="outlined">
+                        <CardContent>
+                            <Group fontSize="large" />
+                            <Typography>Instructors</Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item md={4} sm={12} xs={12}>
+                    <Card variant="outlined">
+                        <CardContent>
+                            <Queue fontSize="large" />
+                            <Typography>Open Subject Classes</Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item md={4} sm={12} xs={12}>
+                    <Card variant="outlined">
+                        <CardContent>
+                            <Grading fontSize="large" />
+                            <Typography>Closed Subject Classes</Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+            </Grid>}
+
             {includes(roles, 'Evaluation Manager') && <TextField
                 defaultValue={filters?.search || ''}
                 inputRef={targetRefQuickSearch}
@@ -811,6 +850,12 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                 variant="outlined"
                 sx={{ mb: 4 }}
             />}
+
+            {evaluateesPaginationMeta.last_page > 1 && <Pagination
+                count={evaluateesPaginationMeta.last_page}
+                onChange={handleEvaluateesPageChange}
+                page={evaluateesPaginationMeta.current_page}
+                sx={{ textAlign: "center", mb: 4}}/>}
             
             {evaluatees.data.map((evaluatee) => <Accordion key={evaluatee.id}>
                 <AccordionSummary
@@ -970,6 +1015,6 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
     );
 };
 
-List.layout = page => <MainLayout children={page} title="Evaluation Forms" />;
+List.layout = page => <MainLayout children={page} title="Evaluation Schedule" />;
 
 export default List;

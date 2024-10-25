@@ -34,7 +34,7 @@ class EvaluationScheduleService
         return $latestEvaluationSchedule;
     }
 
-    public function getEvaluatees(EvaluationSchedule $evaluationSchedule, array $filters = [])
+    public function getEvaluatees(EvaluationSchedule $evaluationSchedule, array $filters = [], ?int $perPage = null)
     {
         $isEvaluationManager = Auth::user()->hasRole('Evaluation Manager');
 
@@ -92,6 +92,6 @@ class EvaluationScheduleService
             ])
             ->orderBy('last_name')
             ->orderBy('first_name')
-            ->get();
+            ->paginate($perPage);
     }
 }
