@@ -6,6 +6,9 @@ use App\Models\EvaluationSchedule;
 use App\Models\User;
 use App\Repositories\EvaluationScheduleRepository;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Support\Facades\Auth;
 
 class EvaluationScheduleService
@@ -53,11 +56,16 @@ class EvaluationScheduleService
             });
         }
 
-        return $query->with([
-                'subjectClasses.subject',
-                'subjectClasses.course',
-                'subjectClasses.evaluationSchedule',
-                'subjectClasses.evaluationScheduleSubjectClass' => function ($query) {
+        return $query
+            ->withWhereHas('subjectClasses', function (Builder|HasMany $query) use ($evaluationSchedule) {
+                $query->with(['subject', 'course']);
+                $query->withWhereHas('evaluationSchedule', function (Builder|HasOneThrough $query) use ($evaluationSchedule) {
+                    $relationTable = $query->getModel()->getTable();
+                    $query->where("$relationTable.id", $evaluationSchedule->id);
+                });
+                $query->withWhereHas('evaluationScheduleSubjectClass', function (Builder|HasOne $query) use ($evaluationSchedule) {
+                    $relationTable = $query->getModel()->getTable();
+                    $query->where("$relationTable.evaluation_schedule_id", $evaluationSchedule->id);
                     $query->with(['evaluationPasscodes', 'evaluationResult']);
                     $query->withCount([
                         'evaluationPasscodes',
@@ -65,18 +73,14 @@ class EvaluationScheduleService
                             $query->where('submitted', 1);
                         },
                     ]);
-                },
-            ])
-            ->whereHas('subjectClasses.evaluationSchedule', function (Builder $query) use ($evaluationSchedule) {
-                $relationTable = $query->getModel()->getTable();
-                $query->where("$relationTable.id", $evaluationSchedule->id);
-            })
-            ->whereHas('subjectClasses.evaluationScheduleSubjectClass', function (Builder $query) use ($evaluationSchedule) {
-                $relationTable = $query->getModel()->getTable();
-                $query->where("$relationTable.evaluation_schedule_id", $evaluationSchedule->id);
+                });
             })
             ->withCount([
-                'subjectClasses',
+                'subjectClasses' => function (Builder $query) use ($evaluationSchedule) {
+                    $query->whereHas('evaluationScheduleSubjectClass', function (Builder $query) use ($evaluationSchedule) {
+                        $query->where('evaluation_schedule_id', $evaluationSchedule->id);
+                    });
+                },
                 'subjectClasses as subject_classes_count_open' => function ($query) use ($evaluationSchedule) {
                     $query->whereHas('evaluationScheduleSubjectClass', function (Builder $query) use ($evaluationSchedule) {
                         $query->where('evaluation_schedule_id', $evaluationSchedule->id);
