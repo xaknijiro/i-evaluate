@@ -179,7 +179,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                 component: 'form',
                 onSubmit: (event) => {
                     event.preventDefault();
-                    postClassRoster(`/evaluation-schedules/${id}/subject-classes/${evaluateeSubjectClass.id}/class-rosters`, {
+                    postClassRoster(`/evaluation-schedules/${id}/subject-classes/${evaluateeSubjectClassEvaluation.id}/class-rosters`, {
                         onSuccess: () => {
                             resetClassRosterForm();
                             handleCloseEvaluationClassRoster();
