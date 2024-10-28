@@ -54,12 +54,33 @@ class EvaluationController extends Controller
             ])
             ->first();
 
+        if (!$evaluationScheduleSubjectClass->is_open) {
+            return redirect()
+                ->route('evaluation')
+                ->with(
+                    'i-evaluate-flash-message',
+                    [
+                        'severity' => 'warning',
+                        'value' => "Evaluation is closed for: $code.",
+                    ]
+                );
+        }
+
         $evaluator = $this->evaluationPasscode->newQuery()
             ->where([
                 'evaluation_schedule_subject_class_id' => $evaluationScheduleSubjectClass->id,
                 'institution_id' => $evaluatorStudentId,
             ])
             ->first();
+
+        $isEmailTaken = $this->evaluationPasscode->newQuery()
+            ->where('institution_id', '!=', $evaluatorStudentId)
+            ->where([
+                'evaluation_schedule_subject_class_id' => $evaluationScheduleSubjectClass->id,
+                'email' => $evaluatorEmail,
+            ])
+            ->exists();
+        
 
         if (! $evaluator) {
             return redirect()
@@ -85,7 +106,10 @@ class EvaluationController extends Controller
                 );
         }
 
-        if ($evaluator->email) {
+        if (
+            $evaluator->email ||
+            (is_null($evaluator->email) && $isEmailTaken)
+        ) {
             if ($evaluator->email !== $evaluatorEmail) {
                 return redirect()
                     ->route('evaluation')
@@ -93,7 +117,7 @@ class EvaluationController extends Controller
                         'i-evaluate-flash-message',
                         [
                             'severity' => 'warning',
-                            'value' => 'Already been taken...',
+                            'value' => 'Already been taken by someone else.',
                         ]
                     );
             }

@@ -25,6 +25,17 @@ class EvaluationScheduleSubjectClassController extends Controller
 
     public function index(Request $request, EvaluationScheduleSubjectClass $evaluationScheduleSubjectClass)
     {
+        if (!$evaluationScheduleSubjectClass->is_open) {
+            return redirect()->route('evaluation')
+                ->with(
+                    'i-evaluate-flash-message',
+                    [
+                        'severity' => 'warning',
+                        'value' => "Evaluation is closed for: {$evaluationScheduleSubjectClass->code}.",
+                    ]
+                );
+        }
+
         if (! $request->session()->has('evaluator_email')) {
             return redirect()->route('evaluation');
         }
