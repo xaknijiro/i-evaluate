@@ -12,7 +12,12 @@ class Criterion extends Model
 
     protected $fillable = [
         'description',
+        'is_weighted',
         'weight',
+    ];
+
+    protected $casts = [
+        'is_weighted' => 'boolean',
     ];
 
     public function indicators(): HasMany

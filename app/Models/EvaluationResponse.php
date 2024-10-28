@@ -13,5 +13,6 @@ class EvaluationResponse extends Model
         'evaluation_schedule_subject_class_id',
         'indicator_id',
         'value',
+        'comments',
     ];
 }

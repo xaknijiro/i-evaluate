@@ -32,7 +32,13 @@ class EvaluationFormCriterionController extends Controller
     {
         $criterionData = $request->only(['description', 'weight']);
         $criterionData['weight'] = $criterion['weight'] ?? 0;
+
+        if (!$request->has('weighted')) {
+            $criterionData['is_weighted'] = false;
+        }
+
         $criterion = $evaluationForm->criteria()->create($criterionData);
+        
         if ($request->has('indicators')) {
             $criterion->indicators()->createMany($request->input('indicators'));
         } else {

@@ -129,7 +129,8 @@ class EvaluationScheduleSubjectClassController extends Controller
         $responses = $indicators->map(fn ($indicator) => [
             'evaluation_schedule_subject_class_id' => $id,
             'indicator_id' => $indicator->id,
-            'value' => $request->input("indicator-$indicator->id"),
+            'value' => $indicator->criterion->is_weighted ? $request->input("indicator-$indicator->id") : null,
+            'comments' => !$indicator->criterion->is_weighted ? $request->input("indicator-$indicator->id") : null,
             'created_at' => now(),
             'updated_at' => now(),
         ])->toArray();

@@ -36,7 +36,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
     const { auth, filters } = usePage().props;
     const { roles } = auth;
 
-    const { links: evaluateesPaginationLinks, meta: evaluateesPaginationMeta } = evaluatees;
+    const { meta: evaluateesPaginationMeta } = evaluatees;
 
     const { id, academic_year: academicYear, semester, evaluation_type: evaluationType, evaluation_form: evaluationForm, is_open: evaluationScheduleIsOpen } = evaluationSchedule.data;
     const { likert_scale: likertScale } = evaluationForm || {};
@@ -429,7 +429,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {evaluationForm.criteria.map((criterion) => {
+                                    {evaluationForm.criteria.filter((criterion) => criterion.is_weighted).map((criterion) => {
                                         const { details } = evaluationResultDetails || {};
                                         const { criteria } = details || [];
                                         const criterionResult = find(criteria, { id: criterion.id });
@@ -469,7 +469,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                             Class Evaluation Responses Details
                         </Typography>
                         <Divider sx={{ mb: 2 }} />
-                        {evaluationForm.criteria.map((criterion) => {
+                        {evaluationForm.criteria.filter((criterion) => criterion.is_weighted).map((criterion) => {
                             const { details } = evaluationResultDetails || {};
                             const { criteria } = details || [];
                             const criterionResult = find(criteria, { id: criterion.id });
@@ -555,6 +555,30 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                 </AccordionDetails>
                             </Accordion>;
                         })}
+                        {evaluationForm.criteria.filter((criterion) => !criterion.is_weighted).map((criterion) => {
+                            const { details } = evaluationResultDetails || {};
+                            const { criteria } = details || [];
+                            const criterionResult = find(criteria, { id: criterion.id });
+
+                            return <Accordion expanded key={criterion.id} variant="outlined">
+                                <AccordionSummary>
+                                    <Typography flex={1} variant="h6">{criterion.description}</Typography>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    {criterion.indicators.map((indicator, index) => {
+                                        const { indicators: indicatorsResult } = criterionResult || {};
+                                        const indicatorResult = find(indicatorsResult, { id: indicator.id });
+                                        const { tally } = indicatorResult || [];
+                                        const { comments } = tally[0] || [];
+
+                                        return <Box key={indicator.id} sx={{ mb: 2 }}>
+                                            <Typography sx={{ mb: 2 }}>{index + 1}. {indicator.description}</Typography>
+                                            <Typography><div style={{ whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: comments }}></div></Typography>
+                                        </Box>;
+                                    })}
+                                </AccordionDetails>
+                            </Accordion>;
+                        })}
                     </Box>
                 </div>
             </Container>
@@ -602,6 +626,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                     <IconButton color="inherit" onClick={() => generatePDF(targetRefEvaluationResultSummary, {
                         filename: `${institutionId}-${evaluationScheduleIsOpen ? 'tentative' : 'final'}-student-to-teacher-evaluation-result-summary.pdf`,
                         page: {
+                            method: 'save',
                             margin: Margin.SMALL,
                             size: 'a4',
                         }
@@ -723,7 +748,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {evaluationForm.criteria.map((criterion) => {
+                                {evaluationForm.criteria.filter((criterion) => criterion.is_weighted).map((criterion) => {
                                     const criterionResultSummary = find(evaluationResultSummary.criteria, { id: criterion.id });
                                     const {
                                         ave_rating: criterionAveRating,
@@ -758,7 +783,36 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                         </Table>
                     </TableContainer>
 
-                    <Box sx={{ mt: 2 }}>{likertScaleLegend()}</Box>
+                    <Box sx={{ mt: 2, pageBreakAfter: "always" }}>{likertScaleLegend()}</Box>
+
+                    {evaluationForm.criteria.filter((criterion) => !criterion.is_weighted).map((criterion) => {
+                        const { indicators } = criterion;
+                        return <Paper key={`${evaluatee.id}-${criterion.id}`} variant="outlined" sx={{ mb: 2, mt: 2, p: 2 }}>
+                            <Typography sx={{ mb: 2 }}>{criterion.description}</Typography>
+                            {indicators.map((indicator, index) => {
+                                const { description } = indicator;
+                                return <Box key={`${evaluatee.id}-${criterion.id}-${indicator.id}`} sx={{ mb: 2 }}>
+                                    <Typography sx={{ mb: 2 }}>{index + 1}. {description}</Typography>
+                                    {subjectClassesEvaluated.map((subjectClass) => {
+                                        const { evaluation, section, subject } = subjectClass;
+                                        const { code: subjectCode, title: subjectTitle } = subject;
+                                        const { result } = evaluation;
+                                        const { details } = result;
+                                        const { criteria } = details;
+                                        const criterionResult = find(criteria, { id: criterion.id });
+                                        const { indicators: criterionIndicators } = criterionResult;
+                                        const indicatorResult = find(criterionIndicators, { id: indicator.id });
+                                        const { tally } = indicatorResult;
+                                        const comments = tally[0].comments;
+                                        return <Box sx={{ mb: 2,  ml: 2}}>
+                                            <Typography variant="caption">({section}) {subjectCode} - {subjectTitle}</Typography>
+                                            <Typography><div style={{ whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: comments }} /></Typography>
+                                        </Box>;
+                                    })}
+                                </Box>
+                            })}
+                        </Paper>;
+                    })}
                 </Box>
             </Container>
         </Dialog>;

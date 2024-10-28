@@ -21,8 +21,9 @@ class EvaluationResultService
     {
         $evaluationForm = $evaluationScheduleSubjectClass->evaluationSchedule->evaluationForm;
         $evaluationForm->loadMissing(['criteria.indicators', 'likertScale']);
+        $criteria = $evaluationForm->criteria;
 
-        $indicatorIds = $evaluationForm->criteria->pluck('indicators')->flatten()->pluck('id')->toArray();
+        $indicatorIds = $criteria->pluck('indicators')->flatten()->pluck('id')->toArray();
 
         $responsesGroupByIndicator = $this->evaluationResponse->newQuery()
             ->where('evaluation_schedule_subject_class_id', $evaluationScheduleSubjectClass->id)
@@ -41,6 +42,7 @@ class EvaluationResultService
                         'value' => $rating,
                         'count' => $count,
                         'points' => $rating * $count,
+                        'comments' => $group->pluck('comments')->join(PHP_EOL),
                     ];
                 }),
             ];
@@ -57,7 +59,7 @@ class EvaluationResultService
             ];
         });
 
-        $criteriaResult = $evaluationForm->criteria->mapWithKeys(function (Criterion $criterion) use ($responsesByIndicatorAveScore) {
+        $criteriaResult = $criteria->mapWithKeys(function (Criterion $criterion) use ($responsesByIndicatorAveScore) {
             $indicatorsResult = $criterion->indicators->mapWithKeys(function (Indicator $indicator) use ($responsesByIndicatorAveScore) {
                 return [
                     $indicator->id => $responsesByIndicatorAveScore->get($indicator->id) ?? collect(),
@@ -72,11 +74,12 @@ class EvaluationResultService
             return [
                 $criterion->id => collect([
                     'id' => $criterion->id,
+                    'is_weighted' => $criterion->is_weighted,
+                    'weight' => $criterion->weight,
                     'indicators' => $indicatorsResult,
                     'total_points' => $totalPoints,
                     'responses' => $responses,
                     'rating' => $criterionRating,
-                    'weight' => $criterion->weight,
                     'weighted_rating' => $weigthedRating,
                 ]),
             ];

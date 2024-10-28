@@ -113,6 +113,7 @@ class EvaluationScheduleController extends Controller
      */
     public function destroy(EvaluationSchedule $evaluationSchedule)
     {
+        $evaluationSchedule->subjectClasses()->delete();
         $evaluationSchedule->delete();
     }
 }

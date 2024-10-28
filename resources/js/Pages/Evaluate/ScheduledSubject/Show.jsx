@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Container from '@mui/material/Container';
 import { Head, router } from '@inertiajs/react';
-import { Alert, AppBar, Box, Button, Chip, createTheme, Divider, Icon, Paper, Rating, Stack, Toolbar, Typography } from '@mui/material';
+import { Alert, AppBar, Box, Button, Chip, createTheme, Divider, Paper, Rating, Stack, TextField, Toolbar, Typography } from '@mui/material';
 import { AccountCircle, DateRange, Password, School, Subject } from '@mui/icons-material';
 import { ThemeProvider } from '@emotion/react';
 
@@ -104,7 +104,14 @@ export default function Show({ errors, id, code, subject, academicYear, semester
                         <Stack spacing={1}>
                         {criterion.indicators.map((indicator) => <Paper sx={{ padding: 2 }} variant="outlined">
                                 <Typography>{indicator.description}</Typography>
-                                <Rating max={likertScale.max_score} name={`indicator-${indicator.id}`} size="large" />
+                                {criterion.is_weighted
+                                    ? <Rating max={likertScale.max_score} name={`indicator-${indicator.id}`} size="large" />
+                                    : <TextField
+                                        fullWidth
+                                        multiline
+                                        inputProps={{ maxLength: 1000 }}
+                                        name={`indicator-${indicator.id}`}
+                                        rows={10}/>}
                                 {!!errors[`indicator-${indicator.id}`] && <Alert severity="error" variant="filled">The rating is required.</Alert>}
                             </Paper>)}
                         </Stack>

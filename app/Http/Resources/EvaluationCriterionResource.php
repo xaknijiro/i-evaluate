@@ -12,6 +12,7 @@ class EvaluationCriterionResource extends JsonResource
         return [
             'id' => $this->id,
             'description' => $this->description,
+            'is_weighted' => $this->is_weighted,
             'weight' => $this->weight,
             'indicators' => EvaluationIndicatorResource::collection($this->indicators),
         ];

@@ -1,7 +1,7 @@
 import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
 import MainLayout from "../../MainLayout";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, Grid, IconButton, MenuItem, Paper, Stack, TextField } from "@mui/material";
-import { Close, Delete, Folder, FolderOpen, Lock, LockOpen, People } from "@mui/icons-material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, MenuItem, Paper, TextField } from "@mui/material";
+import { Delete, FolderOpen, Lock, LockOpen, People } from "@mui/icons-material";
 import React from 'react';
 import { Link, router, useForm } from "@inertiajs/react";
 import { DatePicker } from "@mui/x-date-pickers";
@@ -136,19 +136,6 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
             },
         },
         {
-            headerName: '',
-            renderCell: (cell) => <>
-                <Link
-                    href={`/evaluation-schedules/${cell.row.id}/evaluatees`}
-                >
-                    <FolderOpen/>
-                </Link>
-                <IconButton onClick={(event) => handleDeleteEvaluationSchedule(cell.row.id, event)}>
-                    <Delete/>
-                </IconButton>
-            </>,
-        },
-        {
             field: 'actions',
             type: 'actions',
             width: 100,
@@ -170,17 +157,10 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                     actions.push(<GridActionsCellItem
                         icon={<Lock />}
                         label="Close Schedule"
-                        onClick={() => alert('dave')}
+                        onClick={() => alert('to be implemented')}
                         showInMenu
                     />);
                 }
-
-                actions.push(<GridActionsCellItem
-                    icon={<People />}
-                    label="Class Roster"
-                    onClick={() => confirmDeleteEvaluationDialog(row)}
-                    showInMenu
-                />);
 
                 return actions;
             },

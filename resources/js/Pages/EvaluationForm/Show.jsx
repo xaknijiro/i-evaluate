@@ -1,7 +1,7 @@
 import { router } from "@inertiajs/react";
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, ButtonGroup, Card, CardActions, CardContent, CardHeader, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Fab, FormControl, Grid, IconButton, Input, InputAdornment, Paper, Rating, Stack, TextField, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, ButtonGroup, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, Grid, IconButton, InputAdornment, Paper, Rating, Stack, TextField, Typography } from "@mui/material";
 import MainLayout from "../../MainLayout";
-import { Add, AddTwoTone, ArrowCircleDownTwoTone, ArrowCircleUpTwoTone, DeleteForeverTwoTone, MenuTwoTone, RemoveTwoTone } from "@mui/icons-material";
+import { AddTwoTone, ArrowCircleDownTwoTone, ArrowCircleUpTwoTone, DeleteForeverTwoTone, MenuTwoTone, RemoveTwoTone } from "@mui/icons-material";
 import React from "react";
 
 const Show = ({ errors, evaluationForm }) => {
@@ -147,7 +147,7 @@ const Show = ({ errors, evaluationForm }) => {
     };
 
 
-    const indicatorRatingElementPublished = (no, description) => <Box>
+    const indicatorRatingElementPublished = (criterion, description, no) => <Box>
         <Stack
             alignContent="center"
             direction="row"
@@ -155,7 +155,9 @@ const Show = ({ errors, evaluationForm }) => {
             <Typography>{no}.</Typography>
             <Typography>{description}</Typography>
         </Stack>
-        <Rating size="large" sx={{ ml: 3 }} disabled />
+        {criterion.is_weighted
+            ? <Rating size="large" sx={{ ml: 3 }} disabled />
+            : <TextField fullWidth multiline rows={3} disabled />}
         <Divider />
     </Box>;
 
@@ -235,14 +237,18 @@ const Show = ({ errors, evaluationForm }) => {
             <DialogContent>
                 <TextField
                     autoFocus
+                    fullWidth
                     required
                     label="Description"
                     margin="dense"
                     name="description" />
+                <FormControlLabel control={<Checkbox defaultChecked name="weighted" />} label="Weighted" />
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Cancel</Button>
-                <Button type="submit">Create</Button>
+                <ButtonGroup variant="contained">
+                    <Button color="secondary" onClick={handleClose}>Cancel</Button>
+                    <Button type="submit" color="primary">Create</Button>
+                </ButtonGroup>
             </DialogActions>
         </Dialog>
 
@@ -289,7 +295,7 @@ const Show = ({ errors, evaluationForm }) => {
                                 onClick={(e) => e.stopPropagation()}
                                 sx={{ flex: 1 }}
                                 variant="standard" />}
-                        {!!evaluationForm.published
+                        {criterion.is_weighted && (!!evaluationForm.published
                             ? <Chip label={`${criterion.weight * 100}%`} />
                             : <TextField
                                 label="Weight"
@@ -303,7 +309,7 @@ const Show = ({ errors, evaluationForm }) => {
                                 defaultValue={criterion.weight * 100}
                                 type="number"
                                 sx={{ width: 75 }}
-                                variant="standard" />}
+                                variant="standard" />)}
                         {!!!evaluationForm.published && <ButtonGroup>
                             <IconButton onClick={() => false}>
                                 <MenuTwoTone />
@@ -324,7 +330,7 @@ const Show = ({ errors, evaluationForm }) => {
                             {criteriaIndicators[`criterion_${criterion.id}`]
                                 .map((description, index) => (
                                     !!evaluationForm.published
-                                        ? indicatorRatingElementPublished(index + 1, description)
+                                        ? indicatorRatingElementPublished(criterion, description, index + 1)
                                         : indicatorElementUnpublished(criterion, description, index)
                                 ))}
                         </Stack>
@@ -333,21 +339,6 @@ const Show = ({ errors, evaluationForm }) => {
             </>
         )
         )}
-
-        <Card sx={{ width: "50%" }}>
-            <CardContent>
-                <TextField label="Open Comment Description" variant="standard" />
-            </CardContent>
-            <CardActions>
-                <ButtonGroup>
-                    <Button>Dave</Button>
-                </ButtonGroup>
-            </CardActions>
-        </Card>
-
-        <FormControl>
-            <TextField></TextField>
-        </FormControl>
 
         <Box sx={{ display: "flex", flexDirection: "row-reverse", mt: 2 }}>
             {Boolean(evaluationForm.published) ? <ButtonGroup variant="contained">
