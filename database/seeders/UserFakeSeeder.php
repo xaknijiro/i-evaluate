@@ -15,11 +15,16 @@ class UserFakeSeeder extends Seeder
     public function run(): void
     {
         Department::all()->each(function (Department $department) {
-            User::factory()
+            $users = User::factory()
                 ->hasAttached($department)
-                ->count(20)->create([
+                ->count(5)->create([
                     'password' => Hash::make('123456'),
                 ]);
+            $users->each(function (User $user) {
+                if (! $user->hasRole('Teaching')) {
+                    $user->assignRole('Teaching');
+                }
+            });
         });
     }
 }

@@ -168,11 +168,13 @@ Route::get('/test-email', function () {
 
 Route::get('/test-calculate-evaluation-result/{id}', function ($code) {
     $service = resolve(EvaluationResultService::class);
+
     return $service->calculate(EvaluationScheduleSubjectClass::where('code', $code)->first());
 });
 
 Route::get('/test-calculate-evaluation-result-by-evaluatee/{evaluatee}', function (Evaluatee $evaluatee) {
     $service = resolve(EvaluationResultService::class);
+
     return $service->calculateByEvaluatee($evaluatee);
 });
 

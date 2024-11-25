@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class EvaluationScheduleService
 {
@@ -21,6 +22,7 @@ class EvaluationScheduleService
         protected Evaluatee $evaluateeModel,
         protected Evaluator $evaluatorModel,
         protected EvaluationScheduleRepository $evaluationScheduleRepository,
+        protected Role $roleModel,
         protected User $userModel
     ) {}
 
@@ -183,18 +185,37 @@ class EvaluationScheduleService
                 if ($evaluationSchedule->evaluationType->code === 'peer-evaluation') {
                     $evaluationSchedule->evaluatees->each(function (Evaluatee $evaluatee) use ($evaluatorsLookup) {
                         $evaluateeDepartmentCode = $evaluatee->user->departments->first()->code;
-                        $candidateEvaluatorUsers = $evaluatorsLookup[$evaluateeDepartmentCode]->filter(function (User $user) use ($evaluatee) {
-                            return $user->id !== $evaluatee->user->id;
-                        });
+                        $candidateEvaluatorUsers = $evaluatorsLookup->get($evaluateeDepartmentCode)?->filter(function (User $user) use ($evaluatee) {
+                            return $user->id !== $evaluatee->user->id
+                                && $user->hasRole('Teaching')
+                                && ! $user->hasRole('Dean');
+                        }) ?? collect();
                         $candidateEvaluators = $candidateEvaluatorUsers->map(function (User $user) {
                             return [
                                 'user_id' => $user->id,
                             ];
                         });
-                        $evaluatee->evaluators()->createMany($candidateEvaluators);
+                        if ($candidateEvaluators->isNotEmpty()) {
+                            $evaluatee->evaluators()->createMany($candidateEvaluators);
+                        }
                     });
                 } elseif ($evaluationSchedule->evaluationType->code === 'dean-to-teacher-evaluation') {
-
+                    $role = $this->roleModel->where('name', 'Dean')->first();
+                    $deanUsers = $role->users->groupBy('departments.*.code');
+                    $evaluationSchedule->evaluatees->each(function (Evaluatee $evaluatee) use ($deanUsers) {
+                        $evaluateeDepartmentCode = $evaluatee->user->departments->first()->code;
+                        $candidateEvaluatorUsers = $deanUsers->get($evaluateeDepartmentCode)?->filter(function (User $user) use ($evaluatee) {
+                            return $user->id !== $evaluatee->user->id;
+                        }) ?? collect();
+                        $candidateEvaluators = $candidateEvaluatorUsers->map(function (User $user) {
+                            return [
+                                'user_id' => $user->id,
+                            ];
+                        });
+                        if ($candidateEvaluators->isNotEmpty()) {
+                            $evaluatee->evaluators()->createMany($candidateEvaluators);
+                        }
+                    });
                 } else {
                     if ($evaluationSchedule->evaluationType->code === 'self-evaluation') {
                         $evaluationSchedule->evaluatees->each(function (Evaluatee $evaluatee) {

@@ -104,6 +104,9 @@ class UserController extends Controller
                 ->first();
             if ($user) {
                 $user->departments()->attach($departmentId);
+                if (! $user->hasRole('Teaching')) {
+                    $user->assignRole('Teaching');
+                }
             }
         }
 
