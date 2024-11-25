@@ -11,6 +11,7 @@ use App\Models\Subject;
 use App\Models\SubjectClass;
 use App\Models\User;
 use App\Services\EvaluationScheduleService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
@@ -34,6 +35,29 @@ class EvaluationScheduleEvaluateeController extends Controller
     {
         $filters = $request->all();
         $perPage = $request->input('per_page', 5);
+
+        if ($evaluationSchedule->evaluationType->code === 'student-to-teacher-evaluation') {
+            $evaluationSchedule->loadCount([
+                'evaluationScheduleSubjectClasses as evaluation_schedule_subject_classes_open_count' => function (Builder $query) {
+                    $query->where('is_open', 1);
+                },
+                'evaluationScheduleSubjectClasses as evaluation_schedule_subject_classes_closed_count' => function (Builder $query) {
+                    $query->where('is_open', 0);
+                },
+                'evaluationScheduleSubjectClasses',
+            ]);
+        } else {
+            $evaluationSchedule->loadCount([
+                'evaluatees as evaluatees_open_count' => function (Builder $query) {
+                    $query->where('is_open', 1);
+                },
+                'evaluatees as evaluatees_closed_count' => function (Builder $query) {
+                    $query->where('is_open', 0);
+                },
+                'evaluatees',
+            ]);
+        }
+
         $evaluationScheduleEvaluatees = $this->evaluationScheduleService->getEvaluatees($evaluationSchedule, $filters, $perPage);
 
         return Inertia::render('EvaluationSchedule/Evaluatee/List', [
@@ -159,5 +183,23 @@ class EvaluationScheduleEvaluateeController extends Controller
     public function downloadTemplate()
     {
         return response()->download(storage_path('import_templates/classes.csv'));
+    }
+
+    public function forceUpdate(EvaluationSchedule $evaluationSchedule)
+    {
+        $evaluationType = $evaluationSchedule->evaluationType;
+        if (
+            $evaluationType->code === 'student-to-teacher-evaluation' ||
+            ! $evaluationSchedule->is_open
+        ) {
+            abort(403);
+        }
+
+        $this->evaluationScheduleService->populateEntries($evaluationSchedule);
+
+        Session::flash('i-evaluate-flash-message', [
+            'severity' => 'success',
+            'value' => 'Successfully updated entries.',
+        ]);
     }
 }

@@ -1,13 +1,17 @@
 import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
 import MainLayout from "../../MainLayout";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, MenuItem, Paper, TextField } from "@mui/material";
-import { Delete, FolderOpen, Lock, LockOpen, People } from "@mui/icons-material";
+import { Breadcrumbs, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Link, MenuItem, Paper, TextField, Typography } from "@mui/material";
+import { Event, FolderOpen, Lock, LockOpen } from "@mui/icons-material";
 import React from 'react';
-import { Link, router, useForm } from "@inertiajs/react";
+import { router, useForm, usePage } from "@inertiajs/react";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
+import { includes } from "lodash";
 
 const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters }) => {
+    const { auth } = usePage().props;
+    const { roles } = auth;
+
     const { data, setData, post, reset, errors } = useForm({
         'academic_year_start': null,
         'academic_year_end': null,
@@ -24,28 +28,35 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
     }, [academicYearEnd]);
 
     const [paginationModel, setPaginationModel] = React.useState({
-        page: evaluationSchedules.current_page - 1,
-        pageSize: evaluationSchedules.per_page,
+        page: evaluationSchedules.meta.current_page - 1,
+        pageSize: evaluationSchedules.meta.per_page,
     });
 
-    const rowCountRef = React.useRef(evaluationSchedules?.total || 0);
+    const rowCountRef = React.useRef(evaluationSchedules?.meta?.total || 0);
 
     const rowCount = React.useMemo(() => {
-        if (evaluationSchedules?.total !== undefined) {
-            rowCountRef.current = evaluationSchedules.total;
+        if (evaluationSchedules?.meta?.total !== undefined) {
+            rowCountRef.current = evaluationSchedules.meta.total;
         }
         return rowCountRef.current;
-    }, [evaluationSchedules?.total]);
+    }, [evaluationSchedules?.meta?.total]);
 
     const handleCreateEvaluationSchedule = (event) => {
         event.preventDefault();
         post('/evaluation-schedules', {
             preserveScroll: true,
             onSuccess: (event) => {
-                console.log(event);
                 reset();
                 setAcademicYearEnd(null);
             },
+        });
+    };
+
+    const handleCloseEvaluationSchedule = (evaluationSchedule) => {
+        router.patch(`/evaluation-schedules/${evaluationSchedule.id}`, {
+        }, {
+            preserveScroll: true,
+            onSuccess: () => alert('dave medrano'),
         });
     };
 
@@ -57,7 +68,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
     };
 
     const handleFilterChange = (newFilterModel) => {
-        console.log(newFilterModel);
+
     };
 
     const handlePaginationChange = (newPaginationModel) => {
@@ -97,9 +108,6 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
             field: 'semester',
             headerName: 'Semester',
             flex: 0.5,
-            valueGetter: (row) => {
-                return row.value.title;
-            },
         },
         {
             field: 'evaluation_type',
@@ -118,10 +126,27 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
             },
         },
         {
-            field: 'subject_classes_count',
-            headerName: 'Subject Classes',
+            headerName: 'Open/Closed',
             flex: 1,
-            renderCell: (cell) => `${cell.value} (Open: ${cell.row.subject_classes_count_open} | Closed: ${cell.row.subject_classes_count_closed})`,
+            renderCell: (cell) => {
+                const evaluationTypeCode = cell.row.evaluation_type.code;
+
+                let count;
+                let openCount;
+                let closedCount;
+
+                if (evaluationTypeCode === 'student-to-teacher-evaluation') {
+                    count = cell.row.subject_classes_count;
+                    openCount = cell.row.subject_classes_open_count;
+                    closedCount = cell.row.subject_classes_closed_count;
+                } else {
+                    count = cell.row.evaluatees_count;
+                    openCount = cell.row.evaluatees_open_count;
+                    closedCount = cell.row.evaluatees_closed_count;
+                }
+
+                return `${count} (Open: ${openCount} | Closed: ${closedCount})`;
+            },
         },
         {
             field: 'is_open',
@@ -153,11 +178,11 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                     />
                 ];
 
-                if (!!evaluationScheduleIsOpen) {
+                if (includes(roles, "Evaluation Manager") && !!evaluationScheduleIsOpen) {
                     actions.push(<GridActionsCellItem
                         icon={<Lock />}
                         label="Close Schedule"
-                        onClick={() => alert('to be implemented')}
+                        onClick={() => handleCloseEvaluationSchedule(row)}
                         showInMenu
                     />);
                 }
@@ -169,10 +194,19 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
 
     return (
         <>
-            <Paper
+            <Typography
+                marginBottom={2}
+                sx={{ alignItems: 'center', display: 'flex' }}
+                variant="h4">
+                <Event fontSize="inherit" sx={{ mr: 0.5 }} />
+                Evaluation Schedules
+            </Typography>
+
+            {includes(roles, 'Evaluation Manager') && <Paper
                 component="form"
                 onSubmit={handleCreateEvaluationSchedule}
                 sx={{ mb: 2, p: 2, width: "50%" }}
+                variant="outlined"
             >
                 <Grid container spacing={2} marginBottom={2}>
                     <Grid item md={6}>
@@ -187,6 +221,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                             }}
                             slotProps={{
                                 textField: {
+                                    margin: 'dense',
                                     error: !!errors.academic_year_start,
                                     helperText: errors?.academic_year_start,
                                 }
@@ -206,6 +241,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                             }}
                             slotProps={{
                                 textField: {
+                                    margin: 'dense',
                                     error: !!errors.academic_year_end,
                                     helperText: errors?.academic_year_end,
                                 }
@@ -220,6 +256,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                             error={!!errors.semester}
                             helperText={errors?.semester}
                             label="Semester"
+                            margin="dense"
                             name="semester"
                             value={data.semester}
                             onChange={(e) => setData('semester', e.target.value)}
@@ -236,6 +273,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                             error={!!errors.evaluation_type}
                             helperText={errors?.evaluation_type}
                             label="Evaluation Type"
+                            margin="dense"
                             name="evaluation_type"
                             value={data.evaluation_type}
                             onChange={(e) => setData('evaluation_type', e.target.value)}
@@ -252,6 +290,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                             error={!!errors.evaluation_form}
                             helperText={errors?.evaluation_form}
                             label="Evaluation Form"
+                            margin="dense"
                             name="evaluation_form"
                             value={data.evaluation_form}
                             onChange={(e) => setData('evaluation_form', e.target.value)}
@@ -265,7 +304,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                     </Grid>
                 </Grid>
                 <Button type="submit" fullWidth>Create</Button>
-            </Paper>
+            </Paper>}
             <DataGrid
                 columns={columns}
                 filterMode="server"
@@ -282,6 +321,6 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
     );
 };
 
-List.layout = page => <MainLayout children={page} title="Evaluation Schedule" />;
+List.layout = page => <MainLayout children={page} />;
 
 export default List;

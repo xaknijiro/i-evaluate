@@ -1,5 +1,5 @@
 import { Accordion, AccordionDetails, AccordionSummary, AppBar, Badge, Box, Button, Card, CardContent, CardHeader, Chip, Container, Dialog, Divider, FormLabel, Grid, IconButton, Link, Pagination, Paper, Rating, Stack, styled, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField, Toolbar, Typography, useTheme } from "@mui/material";
-import { Apartment, ArrowDownward, Calculate, CardMembership, Check, Close, CloudUpload, Description, Email, Event, Grading, Group, HourglassTop, Password, People, PersonPin, PictureAsPdf, Queue, School, Score, Subject, ViewAgenda } from "@mui/icons-material";
+import { Apartment, ArrowDownward, Calculate, CardMembership, Check, Close, CloudUpload, Description, Email, Event, Grading, Group, HourglassTop, Note, Password, Pending, People, PersonPin, PictureAsPdf, Queue, School, Score, Subject, ViewAgenda } from "@mui/icons-material";
 import React, { useCallback, useMemo, useRef } from 'react';
 import { router, useForm, usePage } from "@inertiajs/react";
 import MainLayout from "../../../MainLayout";
@@ -38,9 +38,21 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
 
     const { meta: evaluateesPaginationMeta } = evaluatees;
 
-    const { id, academic_year: academicYear, semester, evaluation_type: evaluationType, evaluation_form: evaluationForm, is_open: evaluationScheduleIsOpen } = evaluationSchedule.data;
+    const {
+        id,
+        academic_year: academicYear,
+        semester,
+        evaluation_type: evaluationType,
+        evaluation_form: evaluationForm,
+        evaluation_schedule_subject_classes_open_count: evaluationScheduleSubjectClassesOpenCount,
+        evaluation_schedule_subject_classes_closed_count: evaluationScheduleSubjectClassesClosedCount,
+        evaluatees_open_count: evaluateesOpenCount,
+        evaluatees_closed_count: evaluateesClosedCount,
+        is_open: evaluationScheduleIsOpen
+    } = evaluationSchedule.data;
     const { likert_scale: likertScale } = evaluationForm || {};
     const { default_options: likertScaleOptions } = likertScale || {};
+    const evaluationCounterLabel = evaluationType.title;
 
     const likertScaleLegend = useCallback(() => likertScaleOptions && <TableContainer component={Paper} variant="outlined">
         <Table size="small">
@@ -62,9 +74,10 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
     </TableContainer>);
 
     const [evaluateeEvaluationClassRoster, setEvaluateeEvaluationClassRoster] = React.useState(null);
+    const [evaluateeEvaluationEvaluatorRoster, setEvaluateeEvaluationEvaluatorRoster] = React.useState(null);
     const [evaluateeEvaluationResultPerClass, setEvaluateeEvaluationResultPerClass] = React.useState(null);
     const [evaluateeSubjectClassId, setEvaluateeSubjectClassId] = React.useState(null);
-    
+
     const [evaluateeEvaluationResultSummary, setEvaluateeEvaluationResultSummary] = React.useState(null);
 
     const {
@@ -92,13 +105,23 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
         });
     };
 
+    const handleUpdateEvaluatees = (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const formJson = Object.fromEntries(formData.entries());
+        router.post(`/evaluation-schedules/${id}/evaluatees/force-update`, formJson, {
+            preserveScroll: true,
+            preserveState: false,
+        });
+    };
+
     const handleEvaluateesPageChange = (_event, value) => {
         const queryParams = new URLSearchParams(window.location.search);
         queryParams.set('page', value);
 
         router.get(
             `/evaluation-schedules/${id}/evaluatees?${queryParams.toString()}`,
-            { },
+            {},
             { preserveScroll: true }
         );
     };
@@ -125,6 +148,16 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
         resetClassRosterForm();
         setEvaluateeEvaluationClassRoster(null);
         setEvaluateeSubjectClassId(null);
+    });
+
+    const handleEvaluationEvaluateeEvaluatorsRoster = useMemo(() => (evaluatee) => {
+        // resetClassRosterForm();
+        setEvaluateeEvaluationEvaluatorRoster(evaluatee);
+    });
+
+    const handleCloseEvaluationEvaluateeEvaluatorsRoster = useMemo(() => () => {
+        // resetClassRosterForm();
+        setEvaluateeEvaluationEvaluatorRoster(null);
     });
 
     const handleEvaluationResultPerClassDetails = useMemo(() => (subjectClassId) => {
@@ -170,7 +203,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
             evaluators: evaluateeSubjectClassEvaluationEvaluators,
             is_open: evaluateeSubjectClassEvaluationIsOpen,
         } = evaluateeSubjectClassEvaluation || {};
-        
+
         return <Dialog
             maxWidth="lg"
             open={!!evaluateeSubjectClass}
@@ -208,7 +241,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                 </Toolbar>
             </AppBar>
             <Container sx={{ mt: 12, mb: 4 }}>
-            <Box ref={targetRefEvaluationResultSummary} sx={{ p: 2 }}>
+                <Box ref={targetRefEvaluationResultSummary} sx={{ p: 2 }}>
                     <Typography
                         variant="h4"
                         textAlign="center"
@@ -296,6 +329,124 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                     multiline
                                 />
                                 <Button variant="contained" type="submit" fullWidth>Submit</Button>
+                            </Paper>
+                        </Grid>}
+                    </Grid>
+                </Box>
+            </Container>
+        </Dialog>;
+    });
+
+    const evaluationEvaluatorsRoster = useMemo(() => (evaluatee) => {
+        const {
+            department: evaluateeDepartment,
+            email: evaluateeEmail,
+            evaluation,
+            first_name: evaluateeFirstName,
+            institution_id: evaluateeInstitutionId,
+            last_name: evaluateeLastName,
+        } = evaluatee;
+        const evaluateeFullName = `${evaluateeLastName}, ${evaluateeFirstName}`;
+        const {
+            evaluators: evaluateeEvaluators,
+            is_open: evaluateeEvaluationIsOpen,
+        } = evaluation;
+
+        return <Dialog
+            maxWidth="lg"
+            open
+            onClose={handleCloseEvaluationClassRoster}
+            PaperProps={{
+                component: 'form',
+                onSubmit: (event) => {
+                    event.preventDefault();
+                    // postClassRoster(`/evaluation-schedules/${id}/subject-classes/${evaluateeSubjectClassEvaluation.id}/class-rosters`, {
+                    //     onSuccess: () => {
+                    //         resetClassRosterForm();
+                    //         handleCloseEvaluationClassRoster();
+                    //     }
+                    // });
+                },
+            }}
+            fullScreen
+        >
+            <AppBar sx={{ position: 'fixed' }}>
+                <Toolbar>
+                    <IconButton
+                        edge="start"
+                        color="inherit"
+                        onClick={handleCloseEvaluationEvaluateeEvaluatorsRoster}
+                        aria-label="close"
+                    >
+                        <Close />
+                    </IconButton>
+                    <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+                        {evaluationType.title} Roster
+                    </Typography>
+                </Toolbar>
+            </AppBar>
+            <Container sx={{ mt: 12, mb: 4 }}>
+                <Box sx={{ p: 2 }}>
+                    <Typography
+                        variant="h4"
+                        textAlign="center"
+
+                    >
+                        {evaluationType.title} Roster
+                    </Typography>
+                    <Typography
+                        gutterBottom
+                        variant="subtitle1"
+                        textAlign="center"
+                    >
+                        {semester} A.Y. {academicYear}
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+
+                    <Grid container spacing={1}>
+                        <Grid item md={6}>
+                            <Paper variant="outlined" sx={{ mb: 2, p: 2 }}>
+                                <Stack direction="row" spacing={1} alignItems="center" marginBottom={2}>
+                                    <PersonPin />
+                                    <Typography variant="h5" display="inline">{evaluateeFullName}</Typography>
+                                </Stack>
+                                <Stack spacing={1}>
+                                    <Chip color="primary" icon={<CardMembership />} label={evaluateeInstitutionId} />
+                                    <Chip color="default" icon={<Apartment />} label={evaluateeDepartment?.title} />
+                                    <Chip color="default" icon={<Email />} label={evaluateeEmail} />
+                                </Stack>
+                            </Paper>
+                        </Grid>
+                    </Grid>
+
+                    <Grid container spacing={1} sx={{ mt: 1 }}>
+                        <Grid item md={!evaluateeEvaluationIsOpen ? 12 : (!includes(roles, 'Evaluation Manager') ? 12 : 6)} sm={12} xs={12}>
+                            <TableContainer component={Paper} variant="outlined">
+                                <Table size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>ID</TableCell>
+                                            <TableCell>Name</TableCell>
+                                            <TableCell>Email</TableCell>
+                                            <TableCell align="center">Responded</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {evaluateeEvaluators.map((evaluator) => <TableRow>
+                                            <TableCell>{evaluator.user.institution_id}</TableCell>
+                                            <TableCell>{evaluator.user.last_name}, {evaluator.user.first_name}</TableCell>
+                                            <TableCell>{evaluator.user.email}</TableCell>
+                                            <TableCell align="center">
+                                                {evaluator.submitted ? <Check color="success"/> : <Pending color="warning"/>}
+                                            </TableCell>
+                                        </TableRow>)}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Grid>
+                        {includes(roles, 'Evaluation Manager') && evaluateeEvaluationIsOpen && <Grid item md={6} sm={12} xs={12}>
+                            <Paper variant="outlined" sx={{ p: 2 }}>
+                                
                             </Paper>
                         </Grid>}
                     </Grid>
@@ -446,7 +597,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                         <TableCell align="right" colSpan={3}>Overall Rating</TableCell>
                                         <TableCell align="center">
                                             {evaluationResultDetails?.details?.overall_rating.toFixed(2) || 0} ({evaluationResultDetails?.details?.percentile_equivalent || 0}%)
-                                            ({evaluationResultDetails?.details?.descriptive_equivalent || ''})<br/>
+                                            ({evaluationResultDetails?.details?.descriptive_equivalent || ''})<br />
                                             <Rating
                                                 precision={0.1}
                                                 value={evaluationResultDetails?.details?.overall_rating.toFixed(2) || 0}
@@ -597,7 +748,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
         } = evaluatee;
 
         const fullName = `${lastName}, ${firstName}`;
-        const subjectClassesEvaluated  = subjectClasses.filter((subjectClass) => !!subjectClass.evaluation &&
+        const subjectClassesEvaluated = subjectClasses.filter((subjectClass) => !!subjectClass.evaluation &&
             !subjectClass.evaluation.is_open && !!subjectClass.evaluation.result);
         const {
             overall_rating: evaluationOverallRating,
@@ -677,7 +828,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                     <Chip color="primary" icon={<Calculate />} label={`${evaluationOverallRating.toFixed(2) || 0} (${evaluationOverallRatingPercentileEquivalent || 0}%)`} />
                                     <Chip color="default" icon={<Description />} label={evaluationOverallRatingDescriptiveEquivalent} />
                                 </Stack>
-                                <Rating precision={0.1} value={evaluationOverallRating || 0} size="large" readOnly sx={{ mt: 1 }}/>
+                                <Rating precision={0.1} value={evaluationOverallRating || 0} size="large" readOnly sx={{ mt: 1 }} />
                             </Paper>
                         </Grid>
                     </Grid>
@@ -804,7 +955,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                         const indicatorResult = find(criterionIndicators, { id: indicator.id });
                                         const { tally } = indicatorResult;
                                         const comments = tally[0].comments;
-                                        return <Box sx={{ mb: 2,  ml: 2}}>
+                                        return <Box sx={{ mb: 2, ml: 2 }}>
                                             <Typography variant="caption">({section}) {subjectCode} - {subjectTitle}</Typography>
                                             <Typography><div style={{ whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: comments }} /></Typography>
                                         </Box>;
@@ -829,38 +980,60 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                     </Paper>
                 </Grid>
                 {includes(roles, 'Evaluation Manager') && evaluationScheduleIsOpen && <Grid item md={4} sm={12} xs={12}>
-                    <Paper variant="outlined" sx={{ p: 2}}>
-                        <Box component="form" marginBottom={2} onSubmit={handleImport}>
-                            <Stack spacing={2}>
-                                <Button
-                                    component="label"
-                                    role={undefined}
-                                    variant="outlined"
-                                    tabIndex={-1}
-                                    startIcon={<CloudUpload />}
-                                    onSubmit={handleImport}
-                                >
-                                    Upload Classes
-                                    <VisuallyHiddenInput type="file" name="classes" />
-                                </Button>
-                                {!!errors.classes ? <p style={{ color: 'red' }}>{errors.classes}</p> : null}
-                                <input type="hidden" name="from_import" value={1} />
+                    {evaluationType.code === 'student-to-teacher-evaluation'
+                        ? <Paper variant="outlined" sx={{ p: 2 }}>
+                            <Box component="form" marginBottom={2} onSubmit={handleImport}>
+                                <Stack spacing={2}>
+                                    <Button
+                                        component="label"
+                                        role={undefined}
+                                        variant="outlined"
+                                        tabIndex={-1}
+                                        startIcon={<CloudUpload />}
+                                        onSubmit={handleImport}
+                                    >
+                                        Upload Classes
+                                        <VisuallyHiddenInput type="file" name="classes" />
+                                    </Button>
+                                    {!!errors.classes ? <p style={{ color: 'red' }}>{errors.classes}</p> : null}
+                                    <input type="hidden" name="from_import" value={1} />
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                    >
+                                        Import
+                                    </Button>
+                                </Stack>
+                            </Box>
+                            <Link
+                                href="/import-templates/classes"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Dowload Template
+                            </Link>
+                        </Paper>
+                        : <Paper variant="outlined" sx={{ p: 2 }}>
+                            <Box component="form" marginBottom={2} onSubmit={handleUpdateEvaluatees}>
+                                <Typography
+                                    marginBottom={2}
+                                    sx={{ alignItems: 'center', display: 'flex' }}
+                                    variant="h6">
+                                    <Note fontSize="inherit" sx={{ mr: 0.5 }} />
+                                    Note
+                                </Typography>
+                                <Typography>{evaluationCounterLabel} automatically populated upon creation.</Typography>
+                                <Typography variant="caption">To force update entries click the button below.</Typography>
+                                <Divider sx={{my: 2}}/>
                                 <Button
                                     type="submit"
                                     variant="contained"
+                                    fullWidth
                                 >
-                                    Import
+                                    Force Update Entries
                                 </Button>
-                            </Stack>
-                        </Box>
-                        <Link
-                            href="/import-templates/classes"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            Dowload Template
-                        </Link>
-                    </Paper>
+                            </Box>
+                        </Paper>}
                 </Grid>}
             </Grid>
 
@@ -869,7 +1042,9 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                     <Card variant="outlined">
                         <CardContent>
                             <Group fontSize="large" />
-                            <Typography>Instructors</Typography>
+                            <Typography>
+                                <Chip label={evaluateesPaginationMeta.total} color="primary" /> Instructors
+                            </Typography>
                         </CardContent>
                     </Card>
                 </Grid>
@@ -877,7 +1052,11 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                     <Card variant="outlined">
                         <CardContent>
                             <Queue fontSize="large" />
-                            <Typography>Open Subject Classes</Typography>
+                            <Typography>
+                                <Chip label={
+                                    evaluationScheduleSubjectClassesOpenCount ||
+                                    evaluateesOpenCount || 0} color="primary" /> Open {evaluationCounterLabel}
+                            </Typography>
                         </CardContent>
                     </Card>
                 </Grid>
@@ -885,7 +1064,10 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                     <Card variant="outlined">
                         <CardContent>
                             <Grading fontSize="large" />
-                            <Typography>Closed Subject Classes</Typography>
+                            <Typography>
+                                <Chip label={evaluationScheduleSubjectClassesClosedCount ||
+                                    evaluateesClosedCount || 0} color="primary" /> Closed {evaluationCounterLabel}
+                            </Typography>
                         </CardContent>
                     </Card>
                 </Grid>
@@ -898,7 +1080,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                 label="Quick Search"
                 onKeyUp={(e) => {
                     if (e.key === 'Enter') {
-                        router.get(`/evaluation-schedules/${id}/evaluatees`, { search: targetRefQuickSearch.current.value }, { preserveScroll: true });    
+                        router.get(`/evaluation-schedules/${id}/evaluatees`, { search: targetRefQuickSearch.current.value }, { preserveScroll: true });
                     }
                 }}
                 variant="outlined"
@@ -909,158 +1091,260 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                 count={evaluateesPaginationMeta.last_page}
                 onChange={handleEvaluateesPageChange}
                 page={evaluateesPaginationMeta.current_page}
-                sx={{ textAlign: "center", mb: 4}}/>}
-            
-            {evaluatees.data.map((evaluatee) => <Accordion key={evaluatee.id}>
-                <AccordionSummary
-                    expandIcon={<ArrowDownward />}
-                >
-                    <PersonPin />
-                    <Typography flex={1}>
-                        {evaluatee.last_name}, {evaluatee.first_name} ({evaluatee.email})
-                    </Typography>
-                    <Badge badgeContent={evaluatee.subject_classes_count_open} color="primary" sx={{ mr: 2 }}>
-                        <Subject />
-                    </Badge>
-                    <Typography>{`(${evaluatee.subject_classes_count_closed} of ${evaluatee.subject_classes_count})`}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    {/* Evaluation Result Summary */}
-                    {evaluatee.subject_classes_count_closed > 0 && <Button sx={{ mb: 2 }}>
-                        <Button onClick={() => handleEvaluationResultSummary(evaluatee)} variant="contained">
-                            {`${evaluationScheduleIsOpen ? 'Tentative ' : ''}Overall Evaluation Result Summary`}
-                        </Button>
-                    </Button>}
+                sx={{ textAlign: "center", mb: 4 }} />}
 
-                    <Box>
-                        <DataGrid
-                            columns={[
-                                {
-                                    field: 'evaluation_code',
-                                    headerName: 'Evaluation Code',
-                                    width: 150,
-                                    valueGetter: (cell) => cell.row.evaluation?.code,
-                                },
-                                {
-                                    field: 'section',
-                                    headerName: 'Section',
-                                    width: 100,
-                                },
-                                {
-                                    field: 'subject',
-                                    headerName: 'Subject',
-                                    width: 200,
-                                    valueGetter: (cell) => `${cell.row.subject.code} - ${cell.row.subject.title}`,
-                                },
-                                {
-                                    field: 'course_and_year_level',
-                                    headerName: 'Course/Yr.',
-                                    width: 150,
-                                    valueGetter: (cell) => `${cell.row.course.code} - ${cell.row.year_level}`,
-                                },
-                                {
-                                    field: 'schedule',
-                                    headerName: 'Schedule',
-                                    width: 250,
-                                },
-                                {
-                                    field: 'evaluation_repondents',
-                                    headerName: 'Respondents',
-                                    width: 150,
-                                    renderCell: (cell) => {
-                                        const { evaluation } = cell.row;
-                                        const { evaluators_count: evaluatorsCount, evaluators_count_submitted: evaluatorsCountSubmitted } = evaluation || {};
-                                        return evaluatorsCount > 0 ? <Gauge
-                                            height={90}
-                                            value={evaluatorsCountSubmitted}
-                                            valueMax={evaluatorsCount}
-                                            text={({ value, valueMax }) => `${value} / ${valueMax}`}
-                                        /> : null;
-                                    },
-                                },
-                                {
-                                    'field': 'evaluation_overall_rating',
-                                    'headerName': 'Overall Rating',
-                                    'width': 300,
-                                    renderCell: (cell) => {
-                                        const { evaluation } = cell.row;
+            {evaluatees.data.map((evaluatee) => {
+                let count = 0;
+                let openCount = 0;
+                let closedCount = 0;
+                let columns = [];
+                if (evaluationType.code === 'student-to-teacher-evaluation') {
+                    count = evaluatee.subject_classes_count;
+                    openCount = evaluatee.subject_classes_count_open;
+                    closedCount = evaluatee.subject_classes_count_closed;
 
-                                        if (evaluation && evaluation.is_open) {
-                                            return <HourglassTop />;
-                                        }
+                    columns = [
+                        {
+                            field: 'evaluation_code',
+                            headerName: 'Evaluation Code',
+                            width: 150,
+                            valueGetter: (cell) => cell.row.evaluation?.code,
+                        },
+                        {
+                            field: 'section',
+                            headerName: 'Section',
+                            width: 100,
+                        },
+                        {
+                            field: 'subject',
+                            headerName: 'Subject',
+                            width: 200,
+                            valueGetter: (cell) => `${cell.row.subject.code} - ${cell.row.subject.title}`,
+                        },
+                        {
+                            field: 'course_and_year_level',
+                            headerName: 'Course/Yr.',
+                            width: 150,
+                            valueGetter: (cell) => `${cell.row.course.code} - ${cell.row.year_level}`,
+                        },
+                        {
+                            field: 'schedule',
+                            headerName: 'Schedule',
+                            width: 250,
+                        },
+                        {
+                            field: 'evaluation_repondents',
+                            headerName: 'Respondents',
+                            width: 150,
+                            renderCell: (cell) => {
+                                const { evaluation } = cell.row;
+                                const { evaluators_count: evaluatorsCount, evaluators_count_submitted: evaluatorsCountSubmitted } = evaluation || {};
+                                return evaluatorsCount > 0 ? <Gauge
+                                    height={90}
+                                    value={evaluatorsCountSubmitted}
+                                    valueMax={evaluatorsCount}
+                                    text={({ value, valueMax }) => `${value} / ${valueMax}`}
+                                /> : null;
+                            },
+                        },
+                        {
+                            'field': 'evaluation_overall_rating',
+                            'headerName': 'Overall Rating',
+                            'width': 300,
+                            renderCell: (cell) => {
+                                const { evaluation } = cell.row;
 
-                                        const { result } = evaluation || {};
-                                        const { details } = result || {};
-                                        const overallRating = details?.overall_rating || 0;
-                                        const descriptiveEquivalent = details?.descriptive_equivalent || '';
-                                        const percentileEquivalent = details?.percentile_equivalent || '';
-                                        return <Box>
-                                            {overallRating.toFixed(2)} ({percentileEquivalent}%) ({descriptiveEquivalent})<br/>
-                                            <Rating precision={0.1} value={overallRating} size="small" readOnly />
-                                        </Box>;
-                                    },
-                                },
-                                {
-                                    field: 'actions',
-                                    type: 'actions',
-                                    width: 100,
-                                    getActions: (params) => {
-                                        const { row } = params;
-                                        const { evaluation } = row;
+                                if (evaluation && evaluation.is_open) {
+                                    return <HourglassTop />;
+                                }
 
-                                        let actions = [];
+                                const { result } = evaluation || {};
+                                const { details } = result || {};
+                                const overallRating = details?.overall_rating || 0;
+                                const descriptiveEquivalent = details?.descriptive_equivalent || '';
+                                const percentileEquivalent = details?.percentile_equivalent || '';
+                                return <Box>
+                                    {overallRating.toFixed(2)} ({percentileEquivalent}%) ({descriptiveEquivalent})<br />
+                                    <Rating precision={0.1} value={overallRating} size="small" readOnly />
+                                </Box>;
+                            },
+                        },
+                        {
+                            field: 'actions',
+                            type: 'actions',
+                            width: 100,
+                            getActions: (params) => {
+                                const { row } = params;
+                                const { evaluation } = row;
 
-                                        if (evaluation) {
-                                            if (includes(roles, 'Evaluation Manager') && evaluation.is_open) {
-                                                actions.push(<GridActionsCellItem
-                                                    icon={<Calculate />}
-                                                    label="Calculate Result"
-                                                    onClick={() => handleCalculateResult(params)}
-                                                    showInMenu
-                                                />);
-                                            } 
-                                            
-                                            if (!evaluation.is_open) {
-                                                actions.push(<GridActionsCellItem
-                                                    icon={<ViewAgenda />}
-                                                    label="View Result"
-                                                    onClick={() => handleEvaluationResultPerClassDetails(row.id)}
-                                                    showInMenu
-                                                />);
-                                            }
-                                        }
+                                let actions = [];
 
+                                if (evaluation) {
+                                    if (includes(roles, 'Evaluation Manager') && evaluation.is_open) {
                                         actions.push(<GridActionsCellItem
-                                            icon={<People />}
-                                            label="Class Roster"
-                                            onClick={() => handleEvaluationClassRoster(row.id)}
+                                            icon={<Calculate />}
+                                            label="Calculate Result"
+                                            onClick={() => handleCalculateResult(params)}
                                             showInMenu
                                         />);
+                                    }
 
-                                        return actions;
-                                    },
+                                    if (!evaluation.is_open) {
+                                        actions.push(<GridActionsCellItem
+                                            icon={<ViewAgenda />}
+                                            label="View Result"
+                                            onClick={() => handleEvaluationResultPerClassDetails(row.id)}
+                                            showInMenu
+                                        />);
+                                    }
                                 }
-                            ]}
-                            rows={evaluatee.subject_classes}
-                            slots={{ toolbar: GridToolbar }}
-                            slotProps={{
-                                toolbar: {
-                                    showQuickFilter: true,
+
+                                actions.push(<GridActionsCellItem
+                                    icon={<People />}
+                                    label="Class Roster"
+                                    onClick={() => handleEvaluationClassRoster(row.id)}
+                                    showInMenu
+                                />);
+
+                                return actions;
+                            },
+                        }
+                    ];
+                } else {
+                    columns = [
+                        {
+                            field: 'evaluation_repondents',
+                            headerName: 'Respondents',
+                            width: 150,
+                            renderCell: (cell) => {
+                                const { evaluation } = cell.row;
+                                const { evaluators_count: evaluatorsCount, evaluators_count_submitted: evaluatorsCountSubmitted } = evaluation || {};
+                                return evaluatorsCount > 0 ? <Gauge
+                                    height={90}
+                                    value={evaluatorsCountSubmitted}
+                                    valueMax={evaluatorsCount}
+                                    text={({ value, valueMax }) => `${value} / ${valueMax}`}
+                                /> : null;
+                            },
+                        },
+                        {
+                            'field': 'evaluation_overall_rating',
+                            'headerName': 'Overall Rating',
+                            'width': 300,
+                            renderCell: (cell) => {
+                                console.log(cell);
+
+                                const { evaluation } = cell.row;
+
+                                if (evaluation && evaluation.is_open) {
+                                    return <HourglassTop />;
                                 }
-                            }}
-                            density="compact"
-                            disableColumnFilter
-                            disableColumnSelector
-                            disableDensitySelector
-                            disableRowSelectionOnClick
-                            getRowHeight={() => 'auto'}
-                            hideFooter
-                        />
-                    </Box>
-                </AccordionDetails>
-            </Accordion>)}
+
+                                const { result } = evaluation || {};
+                                const { details } = result || {};
+                                const overallRating = details?.overall_rating || 0;
+                                const descriptiveEquivalent = details?.descriptive_equivalent || '';
+                                const percentileEquivalent = details?.percentile_equivalent || '';
+                                return <Box>
+                                    {overallRating.toFixed(2)} ({percentileEquivalent}%) ({descriptiveEquivalent})<br />
+                                    <Rating precision={0.1} value={overallRating} size="small" readOnly />
+                                </Box>;
+                            },
+                        },
+                        {
+                            field: 'actions',
+                            type: 'actions',
+                            width: 100,
+                            getActions: (params) => {
+                                const { row } = params;
+                                const { evaluation } = row;
+
+                                let actions = [];
+
+                                if (evaluation) {
+                                    if (includes(roles, 'Evaluation Manager') && evaluation.is_open) {
+                                        actions.push(<GridActionsCellItem
+                                            icon={<Calculate />}
+                                            label="Calculate Result"
+                                            onClick={() => handleCalculateResult(params)}
+                                            showInMenu={false}
+                                        />);
+                                    }
+
+                                    if (!evaluation.is_open) {
+                                        actions.push(<GridActionsCellItem
+                                            icon={<ViewAgenda />}
+                                            label="View Result"
+                                            onClick={() => handleEvaluationResultPerClassDetails(row.id)}
+                                            showInMenu={false}
+                                        />);
+                                    }
+                                }
+
+                                actions.push(<GridActionsCellItem
+                                    icon={<People />}
+                                    label="Dave Roster"
+                                    onClick={() => handleEvaluationEvaluateeEvaluatorsRoster(row)}
+                                    showInMenu={false}
+                                />);
+
+                                return actions;
+                            },
+                        }
+                    ];
+                }
+
+                return <Accordion key={evaluatee.id}>
+                    <AccordionSummary
+                        expandIcon={<ArrowDownward />}
+                    >
+                        <PersonPin />
+                        <Typography flex={1}>
+                            {evaluatee.last_name}, {evaluatee.first_name} ({evaluatee.email})
+                        </Typography>
+                        {evaluationType.code === 'student-to-teacher-evaluation' && <>
+                            <Badge badgeContent={openCount} color="primary" sx={{ mr: 2 }}>
+                                <Subject />
+                            </Badge>
+                            <Typography>{`(${closedCount} of ${count})`}</Typography>
+                        </>}
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        {/* Evaluation Result Summary */}
+                        {evaluationType.code === 'student-to-teacher-evaluation' && evaluatee.subject_classes_count_closed > 0 && <Button sx={{ mb: 2 }}>
+                            <Button onClick={() => handleEvaluationResultSummary(evaluatee)} variant="contained">
+                                {`${evaluationScheduleIsOpen ? 'Tentative ' : ''}Overall Evaluation Result Summary`}
+                            </Button>
+                        </Button>}
+
+                        <Box>
+                            <DataGrid
+                                columns={columns}
+                                rows={evaluatee.subject_classes || [evaluatee] || []}
+                                slots={evaluationType.code === 'student-to-teacher-evaluation'
+                                    ? { toolbar: GridToolbar } : {}}
+                                slotProps={evaluationType.code === 'student-to-teacher-evaluation'
+                                    ? {
+                                        toolbar: {
+                                            showQuickFilter: true,
+                                        }
+                                    } : {}}
+                                density="compact"
+                                disableColumnFilter
+                                disableColumnSelector
+                                disableDensitySelector
+                                disableRowSelectionOnClick
+                                getRowHeight={() => 'auto'}
+                                hideFooter
+                            />
+                        </Box>
+                    </AccordionDetails>
+                </Accordion>
+            })}
 
             {evaluateeEvaluationClassRoster && evaluationClassRoster(evaluateeEvaluationClassRoster, evaluateeSubjectClassId)}
+
+            {evaluateeEvaluationEvaluatorRoster && evaluationEvaluatorsRoster(evaluateeEvaluationEvaluatorRoster)}
 
             {evaluateeEvaluationResultPerClass && evaluateeSubjectClassId && evaluationResultPerClassDetails(evaluateeEvaluationResultPerClass, evaluateeSubjectClassId)}
 

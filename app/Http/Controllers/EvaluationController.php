@@ -54,7 +54,7 @@ class EvaluationController extends Controller
             ])
             ->first();
 
-        if (!$evaluationScheduleSubjectClass->is_open) {
+        if (! $evaluationScheduleSubjectClass->is_open) {
             return redirect()
                 ->route('evaluation')
                 ->with(
@@ -80,7 +80,6 @@ class EvaluationController extends Controller
                 'email' => $evaluatorEmail,
             ])
             ->exists();
-        
 
         if (! $evaluator) {
             return redirect()

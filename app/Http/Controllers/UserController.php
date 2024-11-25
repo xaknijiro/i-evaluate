@@ -127,6 +127,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $departments = $this->departmentService->getDepartments();
+
         return Inertia::render('User/Edit', [
             'departments' => DepartmentResource::collection($departments),
             'user' => UserResource::make($user),

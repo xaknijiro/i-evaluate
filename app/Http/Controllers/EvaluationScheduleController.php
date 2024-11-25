@@ -5,21 +5,26 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreEvaluationScheduleRequest;
 use App\Http\Requests\UpdateEvaluationScheduleRequest;
 use App\Http\Resources\EvaluationFormResource;
+use App\Http\Resources\EvaluationScheduleResource;
 use App\Http\Resources\EvaluationTypeResource;
 use App\Http\Resources\SemesterResource;
 use App\Models\EvaluationSchedule;
+use App\Models\EvaluationScheduleSubjectClass;
 use App\Services\EvaluationFormService;
+use App\Services\EvaluationResultService;
 use App\Services\EvaluationScheduleService;
 use App\Services\EvaluationTypeService;
 use App\Services\SemesterService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class EvaluationScheduleController extends Controller
 {
     public function __construct(
         protected EvaluationFormService $evaluationFormService,
+        protected EvaluationResultService $evaluationResultService,
         protected EvaluationSchedule $evaluationScheduleModel,
         protected EvaluationScheduleService $evaluationScheduleService,
         protected EvaluationTypeService $evaluationTypeService,
@@ -37,10 +42,18 @@ class EvaluationScheduleController extends Controller
             ->with(['evaluationForm', 'evaluationType', 'semester'])
             ->withCount([
                 'subjectClasses',
-                'subjectClasses as subject_classes_count_open' => function ($query) {
+                'subjectClasses as subject_classes_open_count' => function ($query) {
                     $query->where('is_open', 1);
                 },
-                'subjectClasses as subject_classes_count_closed' => function ($query) {
+                'subjectClasses as subject_classes_closed_count' => function ($query) {
+                    $query->where('is_open', '<>', 1);
+                },
+
+                'evaluatees',
+                'evaluatees as evaluatees_open_count' => function ($query) {
+                    $query->where('is_open', 1);
+                },
+                'evaluatees as evaluatees_closed_count' => function ($query) {
                     $query->where('is_open', '<>', 1);
                 },
             ])
@@ -51,7 +64,7 @@ class EvaluationScheduleController extends Controller
         $evaluationForms = $this->evaluationFormService->getEvaluationForms();
 
         return Inertia::render('EvaluationSchedule/List', [
-            'evaluationSchedules' => $evaluationSchedules,
+            'evaluationSchedules' => EvaluationScheduleResource::collection($evaluationSchedules),
             'evaluationTypes' => EvaluationTypeResource::collection($evaluationTypes),
             'evaluationForms' => EvaluationFormResource::collection($evaluationForms),
             'semesters' => SemesterResource::collection($semesters),
@@ -87,9 +100,14 @@ class EvaluationScheduleController extends Controller
             $data['evaluation_form']
         );
 
-        $evaluationSchedule = $this->evaluationScheduleService->create($data);
+        DB::transaction(function () use (&$evaluationSchedule, $data) {
+            $evaluationSchedule = $this->evaluationScheduleService->create($data);
+            if ($evaluationSchedule->evaluationType->code !== 'student-to-teacher-evaluation') {
+                $this->evaluationScheduleService->populateEntries($evaluationSchedule);
+            }
 
-        return redirect("evaluation-schedules/$evaluationSchedule->id/evaluatees");
+            return redirect("evaluation-schedules/$evaluationSchedule->id/evaluatees");
+        });
     }
 
     /**
@@ -105,7 +123,17 @@ class EvaluationScheduleController extends Controller
      */
     public function update(UpdateEvaluationScheduleRequest $request, EvaluationSchedule $evaluationSchedule)
     {
-        //
+        DB::transaction(function () use ($evaluationSchedule) {
+            $evaluationSubjectClasses = $evaluationSchedule->evaluationScheduleSubjectClasses;
+            $evaluationSubjectClasses->whereInstanceOf(EvaluationScheduleSubjectClass::class)
+                ->each(function (EvaluationScheduleSubjectClass $evaluationScheduleSubjectClass) {
+                    $this->evaluationResultService->calculate($evaluationScheduleSubjectClass);
+                });
+            if ($evaluationSchedule->evaluationScheduleSubjectClasses()->where('is_open', 1)->doesntExist()) {
+                $evaluationSchedule->is_open = 0;
+                $evaluationSchedule->save();
+            }
+        });
     }
 
     /**

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\EvaluationType;
 use App\Repositories\EvaluationTypeRepository;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -14,7 +13,6 @@ class EvaluationTypeService
 
     public function getEvaluationTypes(): Collection
     {
-        return $this->evaluationTypeRepository->getEvaluationTypes()
-            ->filter(fn (EvaluationType $evaluationType) => $evaluationType->code === 'student-to-teacher-evaluation');
+        return $this->evaluationTypeRepository->getEvaluationTypes();
     }
 }

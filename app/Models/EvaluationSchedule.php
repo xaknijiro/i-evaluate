@@ -53,4 +53,9 @@ class EvaluationSchedule extends Model
     {
         return $this->hasMany(EvaluationScheduleSubjectClass::class);
     }
+
+    public function evaluatees(): HasMany
+    {
+        return $this->hasMany(Evaluatee::class);
+    }
 }

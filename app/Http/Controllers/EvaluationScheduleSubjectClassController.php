@@ -25,7 +25,7 @@ class EvaluationScheduleSubjectClassController extends Controller
 
     public function index(Request $request, EvaluationScheduleSubjectClass $evaluationScheduleSubjectClass)
     {
-        if (!$evaluationScheduleSubjectClass->is_open) {
+        if (! $evaluationScheduleSubjectClass->is_open) {
             return redirect()->route('evaluation')
                 ->with(
                     'i-evaluate-flash-message',
@@ -141,7 +141,7 @@ class EvaluationScheduleSubjectClassController extends Controller
             'evaluation_schedule_subject_class_id' => $id,
             'indicator_id' => $indicator->id,
             'value' => $indicator->criterion->is_weighted ? $request->input("indicator-$indicator->id") : null,
-            'comments' => !$indicator->criterion->is_weighted ? $request->input("indicator-$indicator->id") : null,
+            'comments' => ! $indicator->criterion->is_weighted ? $request->input("indicator-$indicator->id") : null,
             'created_at' => now(),
             'updated_at' => now(),
         ])->toArray();
