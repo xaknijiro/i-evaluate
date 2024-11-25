@@ -101,6 +101,18 @@ export default function EvaluationTask({
                                 : <TextField
                                     fullWidth
                                     multiline
+                                    onChange={(event) => {
+                                        setData({
+                                            ...data,
+                                            [`indicator-${indicator.id}`]: event.currentTarget.value,
+                                        })
+                                    }}
+                                    onBlur={(event) => {
+                                        setData({
+                                            ...data,
+                                            [`indicator-${indicator.id}`]: event.currentTarget.value,
+                                        })
+                                    }}
                                     inputProps={{ maxLength: 1000 }}
                                     name={`indicator-${indicator.id}`}
                                     rows={10} />}
