@@ -195,6 +195,7 @@ class EvaluationScheduleService
                                 'user_id' => $user->id,
                             ];
                         });
+                        $candidateEvaluators = $candidateEvaluators->unique('user_id');
                         if ($candidateEvaluators->isNotEmpty()) {
                             $evaluatee->evaluators()->createMany($candidateEvaluators);
                         }
@@ -212,6 +213,7 @@ class EvaluationScheduleService
                                 'user_id' => $user->id,
                             ];
                         });
+                        $candidateEvaluators = $candidateEvaluators->unique('user_id');
                         if ($candidateEvaluators->isNotEmpty()) {
                             $evaluatee->evaluators()->createMany($candidateEvaluators);
                         }
