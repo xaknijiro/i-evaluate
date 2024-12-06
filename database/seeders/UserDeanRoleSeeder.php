@@ -12,8 +12,14 @@ class UserDeanRoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $userIds = [-1];
-        $users = User::whereIn('id', $userIds)->get();
+        $userEmails = [
+            'ginard.guaki@kcp.edu.ph',
+            'orlando.ananey@kcp.edu.ph',
+            'noel.aniceto@kcp.edu.ph',
+            'garry.panaten@kcp.edu.ph',
+            'ruth.waclin@kcp.edu.ph',
+        ];
+        $users = User::whereIn('email', $userEmails)->get();
         $users->each(function (User $user) {
             if (! $user->hasRole('Dean')) {
                 $user->assignRole('Dean');
