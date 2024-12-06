@@ -8,6 +8,7 @@ import { BarChart, Gauge } from "@mui/x-charts";
 import { find, includes, sortBy } from "lodash";
 import { Margin } from "react-to-pdf";
 import generatePDF from "react-to-pdf";
+import EvaluationResultDialog from "../../../Components/EvaluationResultDialog";
 
 const BarChartCommonSettings = (theme) => ({
     colors: [theme.palette.info.main],
@@ -64,9 +65,9 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                 </TableRow>
             </TableHead>
             <TableBody>
-                {sortBy(likertScaleOptions, 'value').reverse().map((option) => <TableRow>
+                {sortBy(likertScaleOptions, 'value').reverse().map((option) => <TableRow key={option.id}>
                     <TableCell>{option.scale_range[0].toFixed(2)} - {option.scale_range[1].toFixed(2)}</TableCell>
-                    <TableCell>{sortBy(option.percentile_range, (p) => p[1]).reverse().map((p) => <>({p[0][0].toFixed(2)} - {p[0][1].toFixed(2)} = {p[1]}%) </>)}</TableCell>
+                    <TableCell>{sortBy(option.percentile_range, (p) => p[1]).reverse().map((p) => <span key={option.id}>({p[0][0].toFixed(2)} - {p[0][1].toFixed(2)} = {p[1]}%) </span>)}</TableCell>
                     <TableCell>{option.label}</TableCell>
                 </TableRow>)}
             </TableBody>
@@ -79,6 +80,10 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
     const [evaluateeSubjectClassId, setEvaluateeSubjectClassId] = React.useState(null);
 
     const [evaluateeEvaluationResultSummary, setEvaluateeEvaluationResultSummary] = React.useState(null);
+
+
+    const [evaluateeEvaluationResult, setEvaluateeEvaluationResult] = React.useState(null);
+
 
     const {
         data: classRosterData,
@@ -124,6 +129,12 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
             {},
             { preserveScroll: true }
         );
+    };
+
+    const handleCalculateEvaluateeEvaluationResult = (evaluateeId) => {
+        router.post(`/evaluatees/${evaluateeId}/calculate-evaluation-result`, {}, {
+            preserveScroll: true,
+        });
     };
 
     const handleCalculateResult = (params) => {
@@ -437,7 +448,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                             <TableCell>{evaluator.user.last_name}, {evaluator.user.first_name}</TableCell>
                                             <TableCell>{evaluator.user.email}</TableCell>
                                             <TableCell align="center">
-                                                {evaluator.submitted ? <Check color="success"/> : <Pending color="warning"/>}
+                                                {evaluator.submitted ? <Check color="success" /> : <Pending color="warning" />}
                                             </TableCell>
                                         </TableRow>)}
                                     </TableBody>
@@ -446,7 +457,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                         </Grid>
                         {includes(roles, 'Evaluation Manager') && evaluateeEvaluationIsOpen && <Grid item md={6} sm={12} xs={12}>
                             <Paper variant="outlined" sx={{ p: 2 }}>
-                                
+
                             </Paper>
                         </Grid>}
                     </Grid>
@@ -611,101 +622,6 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
 
                         <Box sx={{ mb: 2 }}>{likertScaleLegend()}</Box>
 
-                        <Typography
-                            variant="h6"
-                            textAlign="center"
-                            gutterBottom
-                            sx={{ mt: 4 }}
-                        >
-                            Class Evaluation Responses Details
-                        </Typography>
-                        <Divider sx={{ mb: 2 }} />
-                        {evaluationForm.criteria.filter((criterion) => criterion.is_weighted).map((criterion) => {
-                            const { details } = evaluationResultDetails || {};
-                            const { criteria } = details || [];
-                            const criterionResult = find(criteria, { id: criterion.id });
-                            const {
-                                responses: criterionResponses,
-                                rating: criterionRating,
-                                total_points: criterionTotalPoints,
-                                weight: criterionWeight,
-                                weighted_rating: criterionWeightedRating
-                            } = criterionResult || {};
-
-                            return <Accordion expanded key={criterion.id} variant="outlined">
-                                <AccordionSummary>
-                                    <Typography flex={1} variant="h6">{criterion.description}</Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    <TableContainer component={Paper} variant="outlined">
-                                        <Table size="small">
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell width="50%">Indicator</TableCell>
-                                                    <TableCell align="center" width="25%">Tally</TableCell>
-                                                    <TableCell align="center">Total Points</TableCell>
-                                                    <TableCell align="center">Responses</TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {criterion.indicators.map((indicator, index) => {
-                                                    const { indicators: indicatorsResult } = criterionResult || {};
-                                                    const indicatorResult = find(indicatorsResult, { id: indicator.id });
-                                                    const {
-                                                        responses: indicatorResponses,
-                                                        total_points: indicatorTotalPoints,
-                                                        tally
-                                                    } = indicatorResult || {};
-                                                    const data = [0, 0, 0, 0, 0];
-
-                                                    if (tally) {
-                                                        tally.forEach(({ value, count }) => {
-                                                            data[value - 1] = count;
-                                                        });
-                                                    }
-
-                                                    return <TableRow key={indicator.id}>
-                                                        <TableCell>{index + 1}. {indicator.description}</TableCell>
-                                                        <TableCell align="center">
-                                                            <BarChart
-                                                                {...BarChartCommonSettings(theme)}
-                                                                xAxis={[{
-                                                                    scaleType: 'band',
-                                                                    data: [1, 2, 3, 4, 5],
-                                                                    label: 'Rating',
-                                                                }]}
-                                                                yAxis={[{
-                                                                    tickMinStep: 1,
-                                                                    label: 'Respondent',
-                                                                }]}
-                                                                series={[{ data: data }]}
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell align="center">{indicatorTotalPoints || 0}</TableCell>
-                                                        <TableCell align="center">{indicatorResponses || 0}</TableCell>
-                                                    </TableRow>;
-                                                })}
-                                            </TableBody>
-                                            <TableFooter>
-                                                <TableRow>
-                                                    <TableCell colSpan={4}>
-                                                        <Typography variant="h6">Criterion Rating</Typography>
-                                                        <Stack direction="row" spacing={2}>
-                                                            <Typography>Total Points: {criterionTotalPoints || 0}</Typography>
-                                                            <Typography>Responses: {criterionResponses || 0}</Typography>
-                                                            <Typography>Rating: {criterionRating.toFixed(2)}</Typography>
-                                                            <Rating precision={0.1} value={criterionRating.toFixed(2) || 0} readOnly />
-                                                            <Typography>Weight: {(criterionWeight || 0) * 100}%</Typography>
-                                                            <Typography>Weighted Rating: {criterionWeightedRating.toFixed(2) || 0}</Typography>
-                                                        </Stack>
-                                                    </TableCell>
-                                                </TableRow>
-                                            </TableFooter>
-                                        </Table>
-                                    </TableContainer>
-                                </AccordionDetails>
-                            </Accordion>;
-                        })}
                         {evaluationForm.criteria.filter((criterion) => !criterion.is_weighted).map((criterion) => {
                             const { details } = evaluationResultDetails || {};
                             const { criteria } = details || [];
@@ -730,6 +646,104 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                 </AccordionDetails>
                             </Accordion>;
                         })}
+
+                        {includes(roles, 'Evaluation Manager') && <>
+                            <Typography
+                                variant="h6"
+                                textAlign="center"
+                                gutterBottom
+                                sx={{ mt: 4 }}
+                            >
+                                Class Evaluation Responses Details
+                            </Typography>
+                            <Divider sx={{ mb: 2 }} />
+                            {evaluationForm.criteria.filter((criterion) => criterion.is_weighted).map((criterion) => {
+                                const { details } = evaluationResultDetails || {};
+                                const { criteria } = details || [];
+                                const criterionResult = find(criteria, { id: criterion.id });
+                                const {
+                                    responses: criterionResponses,
+                                    rating: criterionRating,
+                                    total_points: criterionTotalPoints,
+                                    weight: criterionWeight,
+                                    weighted_rating: criterionWeightedRating
+                                } = criterionResult || {};
+
+                                return <Accordion expanded key={criterion.id} variant="outlined">
+                                    <AccordionSummary>
+                                        <Typography flex={1} variant="h6">{criterion.description}</Typography>
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                        <TableContainer component={Paper} variant="outlined">
+                                            <Table size="small">
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell width="50%">Indicator</TableCell>
+                                                        <TableCell align="center" width="25%">Tally</TableCell>
+                                                        <TableCell align="center">Total Points</TableCell>
+                                                        <TableCell align="center">Responses</TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {criterion.indicators.map((indicator, index) => {
+                                                        const { indicators: indicatorsResult } = criterionResult || {};
+                                                        const indicatorResult = find(indicatorsResult, { id: indicator.id });
+                                                        const {
+                                                            responses: indicatorResponses,
+                                                            total_points: indicatorTotalPoints,
+                                                            tally
+                                                        } = indicatorResult || {};
+                                                        const data = [0, 0, 0, 0, 0];
+
+                                                        if (tally) {
+                                                            tally.forEach(({ value, count }) => {
+                                                                data[value - 1] = count;
+                                                            });
+                                                        }
+
+                                                        return <TableRow key={indicator.id}>
+                                                            <TableCell>{index + 1}. {indicator.description}</TableCell>
+                                                            <TableCell align="center">
+                                                                <BarChart
+                                                                    {...BarChartCommonSettings(theme)}
+                                                                    xAxis={[{
+                                                                        scaleType: 'band',
+                                                                        data: [1, 2, 3, 4, 5],
+                                                                        label: 'Rating',
+                                                                    }]}
+                                                                    yAxis={[{
+                                                                        tickMinStep: 1,
+                                                                        label: 'Respondent',
+                                                                    }]}
+                                                                    series={[{ data: data }]}
+                                                                />
+                                                            </TableCell>
+                                                            <TableCell align="center">{indicatorTotalPoints || 0}</TableCell>
+                                                            <TableCell align="center">{indicatorResponses || 0}</TableCell>
+                                                        </TableRow>;
+                                                    })}
+                                                </TableBody>
+                                                <TableFooter>
+                                                    <TableRow>
+                                                        <TableCell colSpan={4}>
+                                                            <Typography variant="h6">Criterion Rating</Typography>
+                                                            <Stack direction="row" spacing={2}>
+                                                                <Typography>Total Points: {criterionTotalPoints || 0}</Typography>
+                                                                <Typography>Responses: {criterionResponses || 0}</Typography>
+                                                                <Typography>Rating: {criterionRating.toFixed(2)}</Typography>
+                                                                <Rating precision={0.1} value={criterionRating.toFixed(2) || 0} readOnly />
+                                                                <Typography>Weight: {(criterionWeight || 0) * 100}%</Typography>
+                                                                <Typography>Weighted Rating: {criterionWeightedRating.toFixed(2) || 0}</Typography>
+                                                            </Stack>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </TableFooter>
+                                            </Table>
+                                        </TableContainer>
+                                    </AccordionDetails>
+                                </Accordion>;
+                            })}
+                        </>}
                     </Box>
                 </div>
             </Container>
@@ -969,6 +983,26 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
         </Dialog>;
     });
 
+    /**
+     * (start) handle evaluation result for none student-to-teacher-evaluation type
+     */
+    const handleOpenEvaluateeEvaluationResult = useMemo(() => (evaluatee) => {
+        setEvaluateeEvaluationResult(evaluatee);
+    });
+    const handleCloseEvaluateeEvaluationResult = useMemo(() => () => {
+        setEvaluateeEvaluationResult(null);
+    });
+    const showEvaluationResultDetails = useMemo(() => (evaluatee) => {
+        return EvaluationResultDialog({
+            evaluationSchedule: evaluationSchedule.data,
+            evaluatee: evaluatee,
+            likertScaleLegend,
+            onClose: handleCloseEvaluateeEvaluationResult,
+            roles
+        });
+    });
+    // (end) handle evaluation result for none student-to-teacher-evaluation type
+
     return (
         <>
             <Grid container spacing={1} sx={{ mb: 2 }}>
@@ -1024,7 +1058,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                 </Typography>
                                 <Typography>{evaluationCounterLabel} automatically populated upon creation.</Typography>
                                 <Typography variant="caption">To force update entries click the button below.</Typography>
-                                <Divider sx={{my: 2}}/>
+                                <Divider sx={{ my: 2 }} />
                                 <Button
                                     type="submit"
                                     variant="contained"
@@ -1199,13 +1233,15 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                     }
                                 }
 
-                                actions.push(<GridActionsCellItem
-                                    icon={<People />}
-                                    label="Class Roster"
-                                    onClick={() => handleEvaluationClassRoster(row.id)}
-                                    showInMenu
-                                />);
-
+                                if (includes(roles, 'Evaluation Manager')) {
+                                    actions.push(<GridActionsCellItem
+                                        icon={<People />}
+                                        label="Class Roster"
+                                        onClick={() => handleEvaluationClassRoster(row.id)}
+                                        showInMenu
+                                    />);
+                                }
+                                
                                 return actions;
                             },
                         }
@@ -1232,8 +1268,6 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                             'headerName': 'Overall Rating',
                             'width': 300,
                             renderCell: (cell) => {
-                                console.log(cell);
-
                                 const { evaluation } = cell.row;
 
                                 if (evaluation && evaluation.is_open) {
@@ -1258,7 +1292,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                             getActions: (params) => {
                                 const { row } = params;
                                 const { evaluation } = row;
-
+                                const { id: evaluateeId } = evaluation;
                                 let actions = [];
 
                                 if (evaluation) {
@@ -1266,8 +1300,8 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                         actions.push(<GridActionsCellItem
                                             icon={<Calculate />}
                                             label="Calculate Result"
-                                            onClick={() => handleCalculateResult(params)}
-                                            showInMenu={false}
+                                            onClick={() => handleCalculateEvaluateeEvaluationResult(evaluateeId)}
+                                            showInMenu={true}
                                         />);
                                     }
 
@@ -1275,18 +1309,20 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                         actions.push(<GridActionsCellItem
                                             icon={<ViewAgenda />}
                                             label="View Result"
-                                            onClick={() => handleEvaluationResultPerClassDetails(row.id)}
-                                            showInMenu={false}
+                                            onClick={() => handleOpenEvaluateeEvaluationResult(row)}
+                                            showInMenu={true}
                                         />);
                                     }
                                 }
 
-                                actions.push(<GridActionsCellItem
-                                    icon={<People />}
-                                    label="Dave Roster"
-                                    onClick={() => handleEvaluationEvaluateeEvaluatorsRoster(row)}
-                                    showInMenu={false}
-                                />);
+                                if (includes(roles, 'Evaluation Manager')) {
+                                    actions.push(<GridActionsCellItem
+                                        icon={<People />}
+                                        label={`${evaluationType.title} Roster`}
+                                        onClick={() => handleEvaluationEvaluateeEvaluatorsRoster(row)}
+                                        showInMenu={true}
+                                    />);
+                                }
 
                                 return actions;
                             },
@@ -1294,7 +1330,10 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                     ];
                 }
 
-                return <Accordion key={evaluatee.id}>
+                return <Accordion
+                    defaultExpanded={!includes(roles, 'Evaluation Manager')}
+                    key={evaluatee.id}
+                >
                     <AccordionSummary
                         expandIcon={<ArrowDownward />}
                     >
@@ -1349,6 +1388,8 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
             {evaluateeEvaluationResultPerClass && evaluateeSubjectClassId && evaluationResultPerClassDetails(evaluateeEvaluationResultPerClass, evaluateeSubjectClassId)}
 
             {evaluateeEvaluationResultSummary && evaluationResultSummaryDetails(evaluateeEvaluationResultSummary)}
+
+            {evaluateeEvaluationResult && showEvaluationResultDetails(evaluateeEvaluationResult)}
         </>
     );
 };

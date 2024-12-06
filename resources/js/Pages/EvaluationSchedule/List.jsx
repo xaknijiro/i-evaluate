@@ -93,7 +93,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
         </Dialog>;
     };
 
-    const columns = [
+    const commonColumns = [
         {
             field: 'id',
             flex: 0.25,
@@ -117,49 +117,58 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                 return row.value.title;
             },
         },
-        {
-            field: 'evaluation_form',
-            headerName: 'Evaluation Form',
-            flex: 1,
-            valueGetter: (row) => {
-                return `${row.value.id} - ${row.value.title}`;
-            },
-        },
-        {
-            headerName: 'Open/Closed',
-            flex: 1,
-            renderCell: (cell) => {
-                const evaluationTypeCode = cell.row.evaluation_type.code;
+    ];
 
-                let count;
-                let openCount;
-                let closedCount;
-
-                if (evaluationTypeCode === 'student-to-teacher-evaluation') {
-                    count = cell.row.subject_classes_count;
-                    openCount = cell.row.subject_classes_open_count;
-                    closedCount = cell.row.subject_classes_closed_count;
-                } else {
-                    count = cell.row.evaluatees_count;
-                    openCount = cell.row.evaluatees_open_count;
-                    closedCount = cell.row.evaluatees_closed_count;
-                }
-
-                return `${count} (Open: ${openCount} | Closed: ${closedCount})`;
+    let otherColumns = [];
+    if (includes(roles, 'Evaluation Manager')) {
+        otherColumns = [
+            {
+                field: 'evaluation_form',
+                headerName: 'Evaluation Form',
+                flex: 1,
+                valueGetter: (row) => {
+                    return `${row.value.id} - ${row.value.title}`;
+                },
             },
-        },
-        {
-            field: 'is_open',
-            headerName: 'Status',
-            flex: 1,
-            renderCell: (cell) => {
-                return !!cell.value ? <IconButton>
-                    <LockOpen />
-                </IconButton> : <IconButton>
-                    <Lock />
-                </IconButton>;
+            {
+                headerName: 'Open/Closed',
+                flex: 1,
+                renderCell: (cell) => {
+                    const evaluationTypeCode = cell.row.evaluation_type.code;
+    
+                    let count;
+                    let openCount;
+                    let closedCount;
+    
+                    if (evaluationTypeCode === 'student-to-teacher-evaluation') {
+                        count = cell.row.subject_classes_count;
+                        openCount = cell.row.subject_classes_open_count;
+                        closedCount = cell.row.subject_classes_closed_count;
+                    } else {
+                        count = cell.row.evaluatees_count;
+                        openCount = cell.row.evaluatees_open_count;
+                        closedCount = cell.row.evaluatees_closed_count;
+                    }
+    
+                    return `${count} (Open: ${openCount} | Closed: ${closedCount})`;
+                },
             },
-        },
+            {
+                field: 'is_open',
+                headerName: 'Status',
+                flex: 1,
+                renderCell: (cell) => {
+                    return !!cell.value ? <IconButton>
+                        <LockOpen />
+                    </IconButton> : <IconButton>
+                        <Lock />
+                    </IconButton>;
+                },
+            },
+        ];
+    }
+
+    const actions = [
         {
             field: 'actions',
             type: 'actions',
@@ -191,6 +200,8 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
             },
         }
     ];
+
+    const columns = [...commonColumns, ...otherColumns, ...actions];
 
     return (
         <>

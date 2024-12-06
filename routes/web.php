@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\EvaluateeCalculateEvaluationResultController;
 use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\EvaluationFormController;
 use App\Http\Controllers\EvaluationFormCriterionController;
@@ -101,6 +102,13 @@ Route::middleware('auth')->group(function () {
 
     Route::group(['prefix' => '/calculate-evaluation-result/{evaluationScheduleSubjectClass}', 'middleware' => ['role:Evaluation Manager']], static function () {
         Route::post('/', [EvaluationResultController::class, 'store']);
+    });
+
+    Route::group(['prefix' => '/evaluatees', 'middleware' => ['role:Evaluation Manager']], static function () {
+        Route::post(
+            '/{evaluatee}/calculate-evaluation-result',
+            [EvaluateeCalculateEvaluationResultController::class, 'store']
+        );
     });
 
     Route::group(['prefix' => '/evaluators'], static function () {
