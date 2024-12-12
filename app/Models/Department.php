@@ -13,4 +13,14 @@ class Department extends Model
         'code',
         'title',
     ];
+
+    public function users()
+    {
+        return $this->hasManyThrough(
+            User::class,
+            DepartmentUser::class,
+            'department_id',
+            'id',
+        );
+    }
 }

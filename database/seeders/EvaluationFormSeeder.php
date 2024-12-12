@@ -45,7 +45,8 @@ class EvaluationFormSeeder extends Seeder
                             'description' => $criterionSeed['description'],
                         ],
                         [
-                            'weight' => $criterionSeed['weight'],
+                            'is_weighted' => $criterionSeed['is_weighted'] ?? true,
+                            'weight' => $criterionSeed['weight'] ?? 0,
                         ]
                     );
 

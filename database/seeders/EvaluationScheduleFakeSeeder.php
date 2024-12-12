@@ -29,7 +29,7 @@ class EvaluationScheduleFakeSeeder extends Seeder
 
         $evaluationSchedules = EvaluationSchedule::factory()->count(1)->create([
             'evaluation_type_id' => EvaluationType::where('code', 'student-to-teacher-evaluation')->first()->id,
-            'evaluation_form_id' => EvaluationForm::find(2)->id,
+            'evaluation_form_id' => EvaluationForm::where('title', 'Student to Teacher Evaluation V1')->first()->id,
         ]);
 
         $evaluationSchedules

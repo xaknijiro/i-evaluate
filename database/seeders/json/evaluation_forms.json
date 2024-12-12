@@ -1,218 +1,424 @@
 {
     "evaluation_forms": [
         {
-            "title": "Peer Evaluation",
-            "description": "Please rate your peer using the following scale as the basis for your evaluation.",
+            "title": "Student to Teacher Evaluation V1",
+            "description": "Please rate your teacher using the following scale as the basis for your evaluation.",
             "likert_scale_code": "5-point-scale",
             "criteria": [
                 {
-                    "description": "Attendance and Punctuality",
+                    "description": "Criterion 1",
                     "weight": 0.2,
                     "indicators": [
                         {
-                            "description": "Begins work on time"
+                            "description": "Criterion 1 indicator 1."
                         },
                         {
-                            "description": "Keeps absences within guidelines"
-                        },
-                        {
-                            "description": "Use time effectively"
+                            "description": "Criterion 1 indidator 2."
                         }
                     ]
                 },
                 {
-                    "description": "Quality and Quantity of Work",
+                    "description": "Criterion 2",
                     "weight": 0.2,
                     "indicators": [
                         {
-                            "description": "Able to produce accurate and neat work"
+                            "description": "Criterion 2 indicator 1."
                         },
                         {
-                            "description": "Able to complete tasks correctly"
+                            "description": "Criterion 2 indicator 2."
                         },
                         {
-                            "description": "Able to submit tasks on time"
+                            "description": "Criterion 2 indicator 3."
                         }
                     ]
                 },
                 {
-                    "description": "Work Habits/Initiative",
+                    "description": "Criterion 3",
                     "weight": 0.2,
                     "indicators": [
                         {
-                            "description": "Attends work schedule regularly"
+                            "description": "Criterion 3 indicator 1."
                         },
                         {
-                            "description": "Able to comply and complete work/assigned task"
+                            "description": "Criterion 3 indicator 2."
                         },
                         {
-                            "description": "Volunteers readily when presence is needed"
+                            "description": "Criterion 3 indicator 3."
                         },
                         {
-                            "description": "Asks for help when needed"
+                            "description": "Criterion 3 indicator 4."
                         }
                     ]
                 },
                 {
-                    "description": "Personal Relation/Dependability/Deportment",
+                    "description": "Criterion 4",
                     "weight": 0.2,
                     "indicators": [
                         {
-                            "description": "Able to get along with fellow employees"
+                            "description": "Criterion 4 indicator 1."
                         },
                         {
-                            "description": "Able to demonstrate willingness to help/assist/support co-workers"
+                            "description": "Criterion 4 indicator 2."
                         },
                         {
-                            "description": "Displays a positive outlook and pleasant behavior"
+                            "description": "Criterion 4 indicator 3."
                         },
                         {
-                            "description": "Responds to requests for service and assistance"
+                            "description": "Criterion 4 indicator 4."
                         },
                         {
-                            "description": "Takes responsibility for own actions"
-                        },
-                        {
-                            "description": "Observes good grooming"
-                        },
-                        {
-                            "description": "Wears uniform/appropriate clothes"
+                            "description": "Criterion 4 indicator 5."
                         }
                     ]
                 },
                 {
-                    "description": "Communications",
+                    "description": "Criterion 5",
                     "weight": 0.2,
                     "indicators": [
                         {
-                            "description": "Exhibits good listening and comprehension"
+                            "description": "Criterion 5 indicator 1."
                         },
                         {
-                            "description": "Selects appropriate communication method"
+                            "description": "Criterion 5 indicator 2."
                         },
                         {
-                            "description": "Uses selected communication method effectively"
+                            "description": "Criterion 5 indicator 3."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 4."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 5."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 6."
+                        }
+                    ]
+                },
+                {
+                    "description": "Feedback",
+                    "is_weighted": false,
+                    "indicators": [
+                        {
+                            "description": "Comments/Suggestions"
                         }
                     ]
                 }
             ]
         },
         {
-            "title": "Student to Teacher Evaluation",
-            "description": "Please rate your teacher using the following scale as the basis for your evaluation.",
+            "title": "Peer Evaluation V1",
+            "description": "Please rate your peer using the following scale as the basis for your evaluation.",
             "likert_scale_code": "5-point-scale",
             "criteria": [
                 {
-                    "description": "Classroom Management",
-                    "weight": 0.25,
+                    "description": "Criterion 1",
+                    "weight": 0.2,
                     "indicators": [
                         {
-                            "description": "The teacher is generally well-organized and prepared for class"
+                            "description": "Criterion 1 indicator 1."
                         },
                         {
-                            "description": "The teacher maintains enough classroom discipline"
-                        },
-                        {
-                            "description": "Class time is used in an efficient and productive manner"
-                        },
-                        {
-                            "description": "Returns graded quizzes, examinations, reports, etc."
-                        },
-                        {
-                            "description": "Requires students to observe proper attire"
-                        },
-                        {
-                            "description": "Attends class regularly and arrives/dismisses class on time"
+                            "description": "Criterion 1 indidator 2."
                         }
                     ]
                 },
                 {
-                    "description": "Instruction/Curriculum",
-                    "weight": 0.25,
+                    "description": "Criterion 2",
+                    "weight": 0.2,
                     "indicators": [
                         {
-                            "description": "States clearly the objectives of the lesson"
+                            "description": "Criterion 2 indicator 1."
                         },
                         {
-                            "description": "Makes use of various teaching aids"
+                            "description": "Criterion 2 indicator 2."
                         },
                         {
-                            "description": "Presents lessons using the appropriate methods/technique to ensure students’ understanding"
-                        },
-                        {
-                            "description": "Gives the right number of assignments, tests, and quizzes to fairly evaluate the performance"
-                        },
-                        {
-                            "description": "Has good command of the language instruction"
-                        },
-                        {
-                            "description": "Has good diction, clear, and modulated voice"
-                        },
-                        {
-                            "description": "Identifies and helps students who encounter difficulties in learning"
-                        },
-                        {
-                            "description": "Welcomes questions, stimulates interest, thinking, and discussion in class"
-                        },
-                        {
-                            "description": "Offers encouragement and positive reinforcement, as well as constructive criticism"
-                        },
-                        {
-                            "description": "Is available to students outside class time for tutoring, review work, or to answer questions"
-                        },
-                        {
-                            "description": "Is fair and impartial to all students; no favoritism"
+                            "description": "Criterion 2 indicator 3."
                         }
                     ]
                 },
                 {
-                    "description": "Knowledge of the Subject Matter",
-                    "weight": 0.25,
+                    "description": "Criterion 3",
+                    "weight": 0.2,
                     "indicators": [
                         {
-                            "description": "Knows the subject very well"
+                            "description": "Criterion 3 indicator 1."
                         },
                         {
-                            "description": "Relates present topics to the previous lessons"
+                            "description": "Criterion 3 indicator 2."
                         },
                         {
-                            "description": "Easily answers students’ questions"
+                            "description": "Criterion 3 indicator 3."
                         },
                         {
-                            "description": "Does not read straight from the book or notes"
-                        },
-                        {
-                            "description": "Uses clear and concrete examples"
-                        },
-                        {
-                            "description": "Relates subjects to other fields and life situations"
+                            "description": "Criterion 3 indicator 4."
                         }
                     ]
                 },
                 {
-                    "description": "Personal Qualities",
-                    "weight": 0.25,
+                    "description": "Criterion 4",
+                    "weight": 0.2,
                     "indicators": [
                         {
-                            "description": "Maintains professional appearance and follows the School Dress Code"
+                            "description": "Criterion 4 indicator 1."
                         },
                         {
-                            "description": "She/He is approachable"
+                            "description": "Criterion 4 indicator 2."
                         },
                         {
-                            "description": "She/He demonstrates interest in and concern for the students"
+                            "description": "Criterion 4 indicator 3."
                         },
                         {
-                            "description": "Does not embarrass students in class"
+                            "description": "Criterion 4 indicator 4."
                         },
                         {
-                            "description": "Admits mistakes and shows humility"
+                            "description": "Criterion 4 indicator 5."
+                        }
+                    ]
+                },
+                {
+                    "description": "Criterion 5",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Criterion 5 indicator 1."
                         },
                         {
-                            "description": "Does not take credit for other’s success"
+                            "description": "Criterion 5 indicator 2."
                         },
                         {
-                            "description": "Shows respect and consideration of students’ opinions and suggestions"
+                            "description": "Criterion 5 indicator 3."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 4."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 5."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 6."
+                        }
+                    ]
+                },
+                {
+                    "description": "Feedback",
+                    "is_weighted": false,
+                    "indicators": [
+                        {
+                            "description": "Comments/Suggestions"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Dean's Evaluation V1",
+            "description": "Please rate your faculty/staff using the following scale as the basis for your evaluation.",
+            "likert_scale_code": "5-point-scale",
+            "criteria": [
+                {
+                    "description": "Criterion 1",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Criterion 1 indicator 1."
+                        },
+                        {
+                            "description": "Criterion 1 indidator 2."
+                        }
+                    ]
+                },
+                {
+                    "description": "Criterion 2",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Criterion 2 indicator 1."
+                        },
+                        {
+                            "description": "Criterion 2 indicator 2."
+                        },
+                        {
+                            "description": "Criterion 2 indicator 3."
+                        }
+                    ]
+                },
+                {
+                    "description": "Criterion 3",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Criterion 3 indicator 1."
+                        },
+                        {
+                            "description": "Criterion 3 indicator 2."
+                        },
+                        {
+                            "description": "Criterion 3 indicator 3."
+                        },
+                        {
+                            "description": "Criterion 3 indicator 4."
+                        }
+                    ]
+                },
+                {
+                    "description": "Criterion 4",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Criterion 4 indicator 1."
+                        },
+                        {
+                            "description": "Criterion 4 indicator 2."
+                        },
+                        {
+                            "description": "Criterion 4 indicator 3."
+                        },
+                        {
+                            "description": "Criterion 4 indicator 4."
+                        },
+                        {
+                            "description": "Criterion 4 indicator 5."
+                        }
+                    ]
+                },
+                {
+                    "description": "Criterion 5",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Criterion 5 indicator 1."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 2."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 3."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 4."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 5."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 6."
+                        }
+                    ]
+                },
+                {
+                    "description": "Feedback",
+                    "is_weighted": false,
+                    "indicators": [
+                        {
+                            "description": "Comments/Suggestions"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Self Evaluation V1",
+            "description": "Please rate yourself using the following scale as the basis for your evaluation.",
+            "likert_scale_code": "5-point-scale",
+            "criteria": [
+                {
+                    "description": "Criterion 1",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Criterion 1 indicator 1."
+                        },
+                        {
+                            "description": "Criterion 1 indidator 2."
+                        }
+                    ]
+                },
+                {
+                    "description": "Criterion 2",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Criterion 2 indicator 1."
+                        },
+                        {
+                            "description": "Criterion 2 indicator 2."
+                        },
+                        {
+                            "description": "Criterion 2 indicator 3."
+                        }
+                    ]
+                },
+                {
+                    "description": "Criterion 3",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Criterion 3 indicator 1."
+                        },
+                        {
+                            "description": "Criterion 3 indicator 2."
+                        },
+                        {
+                            "description": "Criterion 3 indicator 3."
+                        },
+                        {
+                            "description": "Criterion 3 indicator 4."
+                        }
+                    ]
+                },
+                {
+                    "description": "Criterion 4",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Criterion 4 indicator 1."
+                        },
+                        {
+                            "description": "Criterion 4 indicator 2."
+                        },
+                        {
+                            "description": "Criterion 4 indicator 3."
+                        },
+                        {
+                            "description": "Criterion 4 indicator 4."
+                        },
+                        {
+                            "description": "Criterion 4 indicator 5."
+                        }
+                    ]
+                },
+                {
+                    "description": "Criterion 5",
+                    "weight": 0.2,
+                    "indicators": [
+                        {
+                            "description": "Criterion 5 indicator 1."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 2."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 3."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 4."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 5."
+                        },
+                        {
+                            "description": "Criterion 5 indicator 6."
+                        }
+                    ]
+                },
+                {
+                    "description": "Feedback",
+                    "is_weighted": false,
+                    "indicators": [
+                        {
+                            "description": "Comments/Suggestions"
                         }
                     ]
                 }
