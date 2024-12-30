@@ -32,15 +32,9 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             RoleSeeder::class,
-
             SemesterSeeder::class,
-            DepartmentSeeder::class,
-            CourseSeeder::class,
-            SubjectSeeder::class,
-
             LikertScaleSeeder::class,
             EvaluationTypeSeeder::class,
-            EvaluationFormSeeder::class,
         ]);
 
         $defaultUser->assignRole('Evaluation Manager');

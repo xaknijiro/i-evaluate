@@ -81,7 +81,7 @@ class EvaluatorController extends Controller
             DB::table($this->responseModel->getTable())->insert($responses);
             $evaluator->submitted = 1;
             $evaluator->save();
-            if ($evaluationType->code === 'self-evaluation') {
+            if (in_array($evaluationType->code, ['dean-to-teacher-evaluation', 'self-evaluation'])) {
                 $this->evaluationResultService->calculateByEvaluatee($evaluatee);
             }
         });
