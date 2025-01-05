@@ -159,6 +159,11 @@ class EvaluationScheduleService
             ->values()
             ->toArray();
 
+        $users = $users->filter(fn (User $user) => $user->hasRole('Teaching'));
+        if (in_array($evaluationSchedule->evaluationType->code, ['peer-evaluation', 'dean-to-teacher-evaluation'])) {
+            $users = $users->filter(fn (User $user) => ! $user->hasRole('Dean'));
+        }
+
         $candidateUsers = $users->map(function (User $user) use ($evaluationSchedule) {
             return [
                 'evaluation_schedule_id' => $evaluationSchedule->id,

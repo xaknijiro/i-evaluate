@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreEvaluateeRequest;
-use App\Http\Requests\UpdateEvaluateeRequest;
 use App\Models\Evaluatee;
 use App\Services\EvaluationResultService;
 
@@ -11,10 +9,7 @@ class EvaluateeCalculateEvaluationResultController extends Controller
 {
     public function __construct(
         protected EvaluationResultService $evaluationResultService
-    ) {
-        
-    }
-
+    ) {}
 
     public function store(
         Evaluatee $evaluatee

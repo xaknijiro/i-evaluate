@@ -3,8 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Department;
-use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Seeder;
 
 class UserDeanRoleFakeSeeder extends Seeder

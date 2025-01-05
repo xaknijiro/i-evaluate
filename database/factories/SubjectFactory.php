@@ -18,8 +18,8 @@ class SubjectFactory extends Factory
     public function definition(): array
     {
         $fakeSubject = Str::title($this->faker->words(3, true));
-        $fakeCode = explode(" ", $fakeSubject);
-        $code = $fakeCode[0][0] . $fakeCode[1][0] . $fakeCode[2][0];
+        $fakeCode = explode(' ', $fakeSubject);
+        $code = $fakeCode[0][0].$fakeCode[1][0].$fakeCode[2][0];
         $title = $fakeSubject;
 
         return [

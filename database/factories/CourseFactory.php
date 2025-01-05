@@ -18,9 +18,9 @@ class CourseFactory extends Factory
     public function definition(): array
     {
         $fakeCourse = Str::title($this->faker->words(3, true));
-        $fakeCode = explode(" ", $fakeCourse);
-        $code = 'BS' . $fakeCode[0][0] . $fakeCode[1][0] . $fakeCode[2][0];
-        $title = 'Bachelor of Science in ' . $fakeCourse;
+        $fakeCode = explode(' ', $fakeCourse);
+        $code = 'BS'.$fakeCode[0][0].$fakeCode[1][0].$fakeCode[2][0];
+        $title = 'Bachelor of Science in '.$fakeCourse;
 
         return [
             'title' => $title,

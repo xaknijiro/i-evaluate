@@ -25,9 +25,7 @@ class FakeSeeder extends Seeder
         private Indicator $indicator,
         private Subject $subject,
         private User $user
-    ) {
-        
-    }
+    ) {}
 
     /**
      * Run the database seeds.
@@ -46,7 +44,6 @@ class FakeSeeder extends Seeder
         $this->course->newQuery()->delete();
         $this->subject->newQuery()->delete();
         $this->command->info('Cleared departments, courses, and subjects!');
-
 
         // Default User
         $defaultUser = $this->user->newQuery()
@@ -69,19 +66,19 @@ class FakeSeeder extends Seeder
         $this->evaluationForm
             ->factory($evaluationTypes->count())
             ->sequence(fn (Sequence $sequence) => [
-                'title' => $evaluationTypes[$sequence->index]->title . ' v1',
+                'title' => $evaluationTypes[$sequence->index]->title.' v1',
             ])
             ->has(
                 $this->criterion->factory(5)->sequence(fn (Sequence $sequence) => [
-                    'description' => 'Criterion ' . $sequence->index % 5 + 1,
+                    'description' => 'Criterion '.$sequence->index % 5 + 1,
                     'is_weighted' => ($sequence->index + 1) % 5 !== 0,
-                    'weight' => ($sequence->index + 1) % 5 !== 0 ? 0.25 : 0
+                    'weight' => ($sequence->index + 1) % 5 !== 0 ? 0.25 : 0,
                 ])
-                ->has(
-                    $this->indicator->factory(5)->sequence(fn (Sequence $sequence) => [
-                        'description' => 'Indicator ' . $sequence->index % 5 + 1,
-                    ])
-                )
+                    ->has(
+                        $this->indicator->factory(5)->sequence(fn (Sequence $sequence) => [
+                            'description' => 'Indicator '.$sequence->index % 5 + 1,
+                        ])
+                    )
             )
             ->create([
                 'likert_scale_id' => LikertScale::first()->id,
@@ -101,15 +98,15 @@ class FakeSeeder extends Seeder
             ->create();
         $departments->each(function (Department $department) {
             $users = $this->user->factory(10)->create([
-                'password' => Hash::make('123456')
+                'password' => Hash::make('123456'),
             ]);
             $users->each(function (User $user) use ($department) {
                 $user->departments()->attach($department);
                 $user->assignRole('Teaching');
             });
-            
+
             $user = $this->user->factory()->create([
-                'password' => Hash::make('123456')
+                'password' => Hash::make('123456'),
             ]);
             $user->departments()->attach($department);
             $user->assignRole('Dean');
