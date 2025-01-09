@@ -27,8 +27,13 @@ class UserController extends Controller
         $perPage = $request->input('per_page', 5);
 
         $users = $this->userModel->newQuery()
-            ->orderBy('last_name')
-            ->paginate($perPage);
+            ->orderBy('last_name');
+        
+        if ($perPage > 0) {
+            $users = $users->paginate($perPage);
+        } else {
+            $users = $users->get();
+        }
 
         return Inertia::render('User/List', [
             'users' => UserResource::collection($users),

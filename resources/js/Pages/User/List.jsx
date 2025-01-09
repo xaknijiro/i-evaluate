@@ -1,9 +1,13 @@
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbarContainer, GridToolbarExport } from "@mui/x-data-grid";
 import MainLayout from "../../MainLayout";
 import { Box, Button, Link, Paper, Stack, styled } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material";
 import React from 'react';
 import { router } from "@inertiajs/react";
+
+const CustomToolbar = () => <GridToolbarContainer>
+    <GridToolbarExport printOptions={{ disableToolbarButton: true }} />
+</GridToolbarContainer>;
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -19,18 +23,21 @@ const VisuallyHiddenInput = styled('input')({
 
 const List = ({ errors, users }) => {
     const [paginationModel, setPaginationModel] = React.useState({
-        page: users.meta.current_page - 1,
-        pageSize: users.meta.per_page,
+        page: users?.meta ? users.meta.current_page - 1 : 0,
+        pageSize: users?.meta?.per_page || -1,
     });
 
-    const rowCountRef = React.useRef(users.meta.total || 0);
+    const rowCountRef = React.useRef(users?.meta?.total || users.data.length || 0);
 
     const rowCount = React.useMemo(() => {
-        if (users.meta.total !== undefined) {
+        if (users?.meta?.total !== undefined) {
             rowCountRef.current = users.meta.total;
         }
         return rowCountRef.current;
-    }, [users.meta.total]);
+    }, [users?.meta?.total]);
+
+    console.log(paginationModel);
+    console.log(rowCount);
 
     const handlePaginationChange = (newPaginationModel) => {
         router.get('/users', {
@@ -124,18 +131,19 @@ const List = ({ errors, users }) => {
             <DataGrid
                 columns={columns}
                 density="compact"
-                disableColumnMenu={true}
                 onPaginationModelChange={handlePaginationChange}
-                pageSizeOptions={[5, 10, 15]}
-                paginationMode="server"
+                pageSizeOptions={[5, 10, 15, { label: 'All', value: -1 }]}
+                paginationMode={users.meta ? 'server' : 'client'}
                 paginationModel={paginationModel}
                 rowCount={rowCount}
                 rows={users.data}
+                slots={{ toolbar: CustomToolbar }}
+                disableColumnMenu
             />
         </>
     );
 };
 
-List.layout = page => <MainLayout children={page} title="Evaluation Forms" />;
+List.layout = page => <MainLayout children={page} title="Users" />;
 
 export default List;

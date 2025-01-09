@@ -1,9 +1,13 @@
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import { DataGrid, GridToolbarContainer, GridToolbarExport } from "@mui/x-data-grid";
 import MainLayout from "../../MainLayout";
-import { Box, Button, IconButton, Link, Paper, Stack, styled, Typography } from "@mui/material";
-import { CloudUpload, Lock, LockOpen } from "@mui/icons-material";
+import { Box, Button, Link, Paper, Stack, styled } from "@mui/material";
+import { CloudUpload } from "@mui/icons-material";
 import React from 'react';
 import { router } from "@inertiajs/react";
+
+const CustomToolbar = () => <GridToolbarContainer>
+    <GridToolbarExport printOptions={{ disableToolbarButton: true }} />
+</GridToolbarContainer>;
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -100,18 +104,20 @@ const List = ({ departments }) => {
             </Paper>
             <DataGrid
                 columns={columns}
+                density="compact"
                 onPaginationModelChange={handlePaginationChange}
-                pageSizeOptions={[5, 10, 15]}
+                pageSizeOptions={[5, 10, 15, { label: 'All', value: departments?.meta?.total || departments.data.length }]}
                 paginationMode="server"
                 paginationModel={paginationModel}
                 rowCount={rowCount}
                 rows={departments.data}
-                slots={{ toolbar: GridToolbar }}
+                slots={{ toolbar: CustomToolbar }}
+                disableColumnMenu
             />
         </>
     );
 };
 
-List.layout = page => <MainLayout children={page} title="Evaluation Forms" />;
+List.layout = page => <MainLayout children={page} title="Departments" />;
 
 export default List;

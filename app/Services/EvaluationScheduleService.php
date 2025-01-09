@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Evaluatee;
 use App\Models\EvaluationSchedule;
+use App\Models\EvaluationType;
 use App\Models\Evaluator;
 use App\Models\User;
 use App\Repositories\EvaluationScheduleRepository;
@@ -21,6 +22,7 @@ class EvaluationScheduleService
     public function __construct(
         protected Evaluatee $evaluateeModel,
         protected Evaluator $evaluatorModel,
+        protected EvaluationType $evaluationTypeModel,
         protected EvaluationScheduleRepository $evaluationScheduleRepository,
         protected Role $roleModel,
         protected User $userModel
@@ -246,5 +248,138 @@ class EvaluationScheduleService
                 'submitted' => 0,
             ])
             ->get();
+    }
+
+    public function getAllAcademicYearsAndSemesters(int $perPage)
+    {
+        $lists = $this->evaluationScheduleRepository->getAllAcademicYearsAndSemesters($perPage);
+
+        $academicYears = $lists->pluck('academic_year')->unique()->toArray();
+        $semesterIds = $lists->pluck('semester_id')->unique()->toArray();
+
+        $evaluationSchedules = $this->evaluationScheduleRepository->getEvaluationSchedulesByAcademicYearsAndSemesters($academicYears, $semesterIds)
+            ->keyBy(function (EvaluationSchedule $evaluationSchedule) {
+                return "{$evaluationSchedule->academic_year}-{$evaluationSchedule->semester_id}-{$evaluationSchedule->evaluationType->code}";
+            });
+
+        $lists->each(function ($list) use ($evaluationSchedules) {
+            $reference = "{$list->academic_year}-{$list->semester_id}";
+            $list->evaluation_types = $this->evaluationTypeModel->all()->map(function (EvaluationType $evaluationType) use ($evaluationSchedules, $reference) {
+                $evaluationSchedule = $evaluationSchedules->get("$reference-{$evaluationType->code}");
+                if ($evaluationSchedule) {
+                    $evaluationType->evaluation_schedule = $evaluationSchedule;
+                }
+                return $evaluationType;
+            });
+        });
+
+        return $lists;
+    }
+
+    public function getEvaluateesByAcademicYearAndSemester(String $academicYear, int $semesterId, array $filters = [], ?int $perPage = null)
+    {
+        $isEvaluationManager = Auth::user()->hasRole('Evaluation Manager');
+
+        $query = $this->userModel->newQuery();
+
+        if (! $isEvaluationManager) {
+            $query->where('id', Auth::id());
+        }
+
+        if ($filters['search'] ?? false && ! $filters['search']) {
+            $search = $filters['search'];
+            $query->where(function (Builder $query) use ($search) {
+                $query->where('last_name', 'like', "%$search%");
+                $query->orWhere('first_name', 'like', "%$search%");
+                $query->orWhere('email', 'like', "%$search%");
+            });
+        }
+
+        $query
+            ->with('subjectClasses', function (Builder|HasMany $query) use ($academicYear, $semesterId) {
+                $query->with('evaluationScheduleSubjectClass', function (Builder|HasOne $query) use ($academicYear, $semesterId) {
+                    $query->with(['evaluationSchedule.evaluationType', 'evaluationResult']);
+                    $query->withCount([
+                        'evaluationPasscodes',
+                        'evaluationPasscodes as evaluation_passcodes_count_submitted' => function ($query) {
+                            $query->where('submitted', 1);
+                        },
+                    ]);
+                    $query->whereHas('evaluationSchedule', function (Builder $query) use ($academicYear, $semesterId) {
+                        $query->where('academic_year', $academicYear);
+                        $query->where('semester_id', $semesterId);
+                    });
+                });
+                $query->whereHas('evaluationScheduleSubjectClass.evaluationSchedule', function (Builder $query) use ($academicYear, $semesterId) {
+                    $query->where('academic_year', $academicYear);
+                    $query->where('semester_id', $semesterId);
+                });
+            })
+            ->withCount([
+                'subjectClasses' => function (Builder $query) use ($academicYear, $semesterId) {
+                    $query->whereHas('evaluationScheduleSubjectClass', function (Builder $query) use ($academicYear, $semesterId) {
+                        $query->whereHas('evaluationSchedule', function (Builder $query) use ($academicYear, $semesterId) {
+                            $query->where('academic_year', $academicYear);
+                            $query->where('semester_id', $semesterId);
+                        });
+                    });
+                },
+                'subjectClasses as subject_classes_count_open' => function ($query) use ($academicYear, $semesterId) {
+                    $query->whereHas('evaluationScheduleSubjectClass', function (Builder $query) use ($academicYear, $semesterId) {
+                        $query->whereHas('evaluationSchedule', function (Builder $query) use ($academicYear, $semesterId) {
+                            $query->where('academic_year', $academicYear);
+                            $query->where('semester_id', $semesterId);
+                        });
+                        $query->where('is_open', 1);
+                    });
+                },
+                'subjectClasses as subject_classes_count_closed' => function ($query) use ($academicYear, $semesterId) {
+                    $query->whereHas('evaluationScheduleSubjectClass', function (Builder $query) use ($academicYear, $semesterId) {
+                        $query->whereHas('evaluationSchedule', function (Builder $query) use ($academicYear, $semesterId) {
+                            $query->where('academic_year', $academicYear);
+                            $query->where('semester_id', $semesterId);
+                        });
+                        $query->where('is_open', '<>', 1);
+                    });
+                },
+            ]);
+
+        $query
+            ->with('evaluatees', function (Builder|HasMany $query) use ($academicYear, $semesterId) {
+                $query->with([
+                    'evaluationSchedule.evaluationType',
+                    'evaluationResult',
+                ]);
+                $query->withCount([
+                    'evaluators',
+                    'evaluators as evaluators_pending_count' => function (Builder $query) {
+                        $query->where('submitted', '<>', 1);
+                    },
+                    'evaluators as evaluators_submitted_count' => function (Builder $query) {
+                        $query->where('submitted', 1);
+                    },
+                ]);
+                $query->whereHas('evaluationSchedule', function (Builder $query) use ($academicYear, $semesterId) {
+                    $query->where('academic_year', $academicYear);
+                    $query->where('semester_id', $semesterId);
+                });
+            });
+
+
+        $query->where(function (Builder $query) use ($academicYear, $semesterId) {
+            $query->whereHas('subjectClasses.evaluationScheduleSubjectClass.evaluationSchedule', function (Builder $query) use ($academicYear, $semesterId) {
+                $query->where('academic_year', $academicYear);
+                $query->where('semester_id', $semesterId);
+            });
+            $query->orWhereHas('evaluatees.evaluationSchedule', function (Builder $query) use ($academicYear, $semesterId) {
+                $query->where('academic_year', $academicYear);
+                $query->where('semester_id', $semesterId);
+            });
+        });
+
+        return $query
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->paginate($perPage);
     }
 }

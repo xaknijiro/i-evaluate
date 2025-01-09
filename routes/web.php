@@ -16,8 +16,12 @@ use App\Http\Controllers\EvaluationScheduleEvaluateeController;
 use App\Http\Controllers\EvaluationScheduleSubjectClassController;
 use App\Http\Controllers\EvaluationScheduleSubjectClassRosterController;
 use App\Http\Controllers\EvaluatorController;
+use App\Http\Controllers\ReportOverallEvaluationResultController;
+use App\Http\Controllers\ReportOverallEvaluationResultEvaluateeController;
 use App\Http\Controllers\StaticPageController;
 use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\SummativeReportController;
+use App\Http\Controllers\SummativeReportEvaluateeController;
 use App\Http\Controllers\UserController;
 use App\Models\Evaluatee;
 use App\Models\EvaluationScheduleSubjectClass;
@@ -115,6 +119,21 @@ Route::middleware('auth')->group(function () {
         Route::patch(
             '/{evaluator}',
             [EvaluatorController::class, 'update']
+        );
+    });
+
+
+    /**
+     * Reports
+     */
+    Route::group(['prefix' => '/reports'], static function () {
+        Route::get(
+            '/overall-evaluation-results',
+            [ReportOverallEvaluationResultController::class, 'index']
+        );
+        Route::get(
+            '/overall-evaluation-results/{academicYear}/{semesterId}/evaluatees',
+            [ReportOverallEvaluationResultEvaluateeController::class, 'index']
         );
     });
 

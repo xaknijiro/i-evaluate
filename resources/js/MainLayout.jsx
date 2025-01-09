@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@emotion/react";
 import { Head, router, usePage } from "@inertiajs/react";
-import { AccountCircle, Apartment, AssessmentTwoTone, CalendarMonthTwoTone, DashboardTwoTone, Description, ExpandLess, ExpandMore, FolderTwoTone, InfoTwoTone, ListAlt, Logout, Menu, Password, People, School, Settings, SettingsTwoTone } from "@mui/icons-material";
-import { Alert, AppBar, Avatar, Box, Collapse, Container, createTheme, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Snackbar, Toolbar, Typography } from "@mui/material";
+import { AccountCircle, Apartment, AssessmentTwoTone, CalendarMonthTwoTone, DashboardTwoTone, Description, ExpandLess, ExpandMore, FolderTwoTone, InfoTwoTone, ListAlt, ListAltTwoTone, Logout, Menu, People, School, SettingsTwoTone } from "@mui/icons-material";
+import { Alert, AppBar, Avatar, Box, Collapse, Container, createTheme, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Snackbar, Toolbar, Typography } from "@mui/material";
 import React from 'react';
 import { includes } from 'lodash';
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -47,6 +47,12 @@ const MainLayout = ({ children, title }) => {
         setOpenUserDrawer(newOpenUserDrawer);
     };
 
+    const [openReports, setOpenReports] = React.useState(false);
+    const toggleReports = (event) => {
+        event.stopPropagation();
+        setOpenReports(!openReports);
+    };
+
     const [openSettings, setOpenSettings] = React.useState(false);
     const toggleSettings = (event) => {
         event.stopPropagation();
@@ -86,17 +92,32 @@ const MainLayout = ({ children, title }) => {
                         <ListItemIcon>
                             <CalendarMonthTwoTone />
                         </ListItemIcon>
-                        <ListItemText primary="Evaluation Schedule" />
+                        <ListItemText primary="Evaluation Schedules" />
                     </ListItemButton>
                 </ListItem>
-                <ListItem disablePadding>
-                    <ListItemButton>
-                        <ListItemIcon>
-                            <AssessmentTwoTone />
-                        </ListItemIcon>
-                        <ListItemText primary="Generate Report" />
-                    </ListItemButton>
-                </ListItem>
+                <List>
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={toggleReports}>
+                            <ListItemIcon>
+                                <AssessmentTwoTone />
+                            </ListItemIcon>
+                            <ListItemText primary="Reports" />
+                            {openReports ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+                    </ListItem>
+                    <Collapse in={openReports} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            <ListItem disablePadding>
+                                <ListItemButton onClick={routeToPage('reports/overall-evaluation-results')} sx={{ pl: 6 }}>
+                                    <ListItemIcon>
+                                        <ListAltTwoTone />
+                                    </ListItemIcon>
+                                    <ListItemText primary="Overall Evaluation Results" />
+                                </ListItemButton>
+                            </ListItem>
+                        </List>
+                    </Collapse>
+                </List>
             </List>
             <Divider />
 

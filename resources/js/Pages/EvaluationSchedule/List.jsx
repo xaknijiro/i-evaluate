@@ -332,6 +332,6 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
     );
 };
 
-List.layout = page => <MainLayout children={page} />;
+List.layout = page => <MainLayout children={page} title={"Evaluation Schedules"}/>;
 
 export default List;
