@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\SummativeReportResource;
-use App\Models\EvaluationSchedule;
 use App\Services\EvaluationScheduleService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ReportOverallEvaluationResultController extends Controller
@@ -18,7 +16,8 @@ class ReportOverallEvaluationResultController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         $perPage = $request->input('per_page', 5);
         $summativeReportList = $this->evaluationScheduleService->getAllAcademicYearsAndSemesters($perPage);
 

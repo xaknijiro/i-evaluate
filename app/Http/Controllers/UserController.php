@@ -28,7 +28,7 @@ class UserController extends Controller
 
         $users = $this->userModel->newQuery()
             ->orderBy('last_name');
-        
+
         if ($perPage > 0) {
             $users = $users->paginate($perPage);
         } else {

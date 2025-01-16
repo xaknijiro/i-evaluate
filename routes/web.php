@@ -20,8 +20,6 @@ use App\Http\Controllers\ReportOverallEvaluationResultController;
 use App\Http\Controllers\ReportOverallEvaluationResultEvaluateeController;
 use App\Http\Controllers\StaticPageController;
 use App\Http\Controllers\SubjectController;
-use App\Http\Controllers\SummativeReportController;
-use App\Http\Controllers\SummativeReportEvaluateeController;
 use App\Http\Controllers\UserController;
 use App\Models\Evaluatee;
 use App\Models\EvaluationScheduleSubjectClass;
@@ -121,7 +119,6 @@ Route::middleware('auth')->group(function () {
             [EvaluatorController::class, 'update']
         );
     });
-
 
     /**
      * Reports

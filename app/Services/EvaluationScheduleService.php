@@ -66,6 +66,14 @@ class EvaluationScheduleService
             });
         }
 
+        if ($filters['department'] ?? false && ! $filters['department']) {
+            $departmentId = $filters['department'];
+            $query->whereHas('departments', function (Builder $query) use ($departmentId) {
+                $relationTable = $query->getModel()->getTable();
+                $query->where("$relationTable.id", $departmentId);
+            });
+        }
+
         if ($evaluationSchedule->evaluationType->code === 'student-to-teacher-evaluation') {
             $query
                 ->withWhereHas('subjectClasses', function (Builder|HasMany $query) use ($evaluationSchedule) {
@@ -269,6 +277,7 @@ class EvaluationScheduleService
                 if ($evaluationSchedule) {
                     $evaluationType->evaluation_schedule = $evaluationSchedule;
                 }
+
                 return $evaluationType;
             });
         });
@@ -276,7 +285,7 @@ class EvaluationScheduleService
         return $lists;
     }
 
-    public function getEvaluateesByAcademicYearAndSemester(String $academicYear, int $semesterId, array $filters = [], ?int $perPage = null)
+    public function getEvaluateesByAcademicYearAndSemester(string $academicYear, int $semesterId, array $filters = [], ?int $perPage = null)
     {
         $isEvaluationManager = Auth::user()->hasRole('Evaluation Manager');
 
@@ -364,7 +373,6 @@ class EvaluationScheduleService
                     $query->where('semester_id', $semesterId);
                 });
             });
-
 
         $query->where(function (Builder $query) use ($academicYear, $semesterId) {
             $query->whereHas('subjectClasses.evaluationScheduleSubjectClass.evaluationSchedule', function (Builder $query) use ($academicYear, $semesterId) {

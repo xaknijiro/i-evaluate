@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, AppBar, Badge, Box, Button, Card, CardContent, CardHeader, Chip, Container, Dialog, Divider, FormLabel, Grid, IconButton, Link, Pagination, Paper, Rating, Stack, styled, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField, Toolbar, Typography, useTheme } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, AppBar, Badge, Box, Button, Card, CardContent, CardHeader, Chip, Container, Dialog, Divider, FormControl, FormLabel, Grid, IconButton, InputLabel, Link, MenuItem, Pagination, Paper, Rating, Select, Stack, styled, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField, Toolbar, Typography, useTheme } from "@mui/material";
 import { Apartment, ArrowDownward, Calculate, CardMembership, Check, Close, CloudUpload, Description, Email, Event, Grading, Group, HourglassTop, Note, Password, Pending, People, PersonPin, PictureAsPdf, Queue, School, Score, Subject, ViewAgenda } from "@mui/icons-material";
 import React, { useCallback, useMemo, useRef } from 'react';
 import { router, useForm, usePage } from "@inertiajs/react";
@@ -31,7 +31,7 @@ const VisuallyHiddenInput = styled('input')({
     width: 1,
 });
 
-const List = ({ errors, evaluationSchedule, evaluatees }) => {
+const List = ({ departments, errors, evaluationSchedule, evaluatees }) => {
     const theme = useTheme();
 
     const { auth, filters } = usePage().props;
@@ -96,6 +96,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
     });
 
     const targetRefQuickSearch = useRef();
+    const targetRefFiltersDepartment = useRef();
     const targetRefEvaluationClassRoster = useRef();
     const targetRefEvaluationResultPerClass = useRef();
     const targetRefEvaluationResultSummary = useRef();
@@ -1107,19 +1108,53 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                 </Grid>
             </Grid>}
 
-            {includes(roles, 'Evaluation Manager') && <TextField
-                defaultValue={filters?.search || ''}
-                inputRef={targetRefQuickSearch}
-                fullWidth
-                label="Quick Search"
-                onKeyUp={(e) => {
-                    if (e.key === 'Enter') {
-                        router.get(`/evaluation-schedules/${id}/evaluatees`, { search: targetRefQuickSearch.current.value }, { preserveScroll: true });
-                    }
-                }}
-                variant="outlined"
-                sx={{ mb: 4 }}
-            />}
+            {includes(roles, 'Evaluation Manager') && <Paper variant="outlined" sx={{ mb: 4, p: 2 }}>
+                <TextField
+                    defaultValue={filters?.search || ''}
+                    inputRef={targetRefQuickSearch}
+                    fullWidth
+                    label="Quick Search"
+                    onKeyUp={(e) => {
+                        if (e.key === 'Enter') {
+                            const queryParams = new URLSearchParams(window.location.search);
+                            queryParams.delete('page');
+                            queryParams.set('search', targetRefQuickSearch.current.value);
+                            router.get(
+                                `/evaluation-schedules/${id}/evaluatees?${queryParams.toString()}`,
+                                {},
+                                { preserveScroll: true }
+                            );
+                        }
+                    }}
+                    variant="outlined"
+                    sx={{ mb: 4 }}
+                />
+                <FormControl fullWidth>
+                    <InputLabel id="demo-select-small-label">Department</InputLabel>
+                    <Select
+                        labelId="demo-select-small-label"
+                        id="demo-select-small"
+                        defaultValue={filters?.department || 0}
+                        inputRef={targetRefFiltersDepartment}
+                        label="Department"
+                        onChange={(_event, item) => {
+                            const { props } = item;
+                            const { value } = props;
+                            const queryParams = new URLSearchParams(window.location.search);
+                            queryParams.delete('page');
+                            queryParams.set('department', value);
+                            router.get(
+                                `/evaluation-schedules/${id}/evaluatees?${queryParams.toString()}`,
+                                {},
+                                { preserveScroll: true }
+                            );
+                        }}
+                    >
+                        <MenuItem value={0}><em>All</em></MenuItem>
+                        {departments.data.map((department) => <MenuItem value={department.id}>{department.title}</MenuItem>)}
+                    </Select>
+                </FormControl>
+            </Paper>}
 
             {evaluateesPaginationMeta.last_page > 1 && <Pagination
                 count={evaluateesPaginationMeta.last_page}
@@ -1241,7 +1276,7 @@ const List = ({ errors, evaluationSchedule, evaluatees }) => {
                                         showInMenu
                                     />);
                                 }
-                                
+
                                 return actions;
                             },
                         }

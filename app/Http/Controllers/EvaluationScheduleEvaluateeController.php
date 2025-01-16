@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEvaluationScheduleEvaluateeRequest;
+use App\Http\Resources\DepartmentResource;
 use App\Http\Resources\EvaluateeResource;
 use App\Http\Resources\EvaluationScheduleResource;
 use App\Models\Course;
@@ -10,6 +11,7 @@ use App\Models\EvaluationSchedule;
 use App\Models\Subject;
 use App\Models\SubjectClass;
 use App\Models\User;
+use App\Services\DepartmentService;
 use App\Services\EvaluationScheduleService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -23,6 +25,7 @@ class EvaluationScheduleEvaluateeController extends Controller
     public function __construct(
         protected Course $courseModel,
         protected EvaluationScheduleService $evaluationScheduleService,
+        protected DepartmentService $departmentService,
         protected Subject $subjectModel,
         protected SubjectClass $subjectClassModel,
         protected User $userModel,
@@ -64,6 +67,7 @@ class EvaluationScheduleEvaluateeController extends Controller
             'evaluationSchedule' => EvaluationScheduleResource::make($evaluationSchedule),
             'evaluatees' => EvaluateeResource::collection($evaluationScheduleEvaluatees),
             'filters' => $filters,
+            'departments' => DepartmentResource::collection($this->departmentService->getDepartments()),
         ]);
     }
 

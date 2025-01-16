@@ -1,6 +1,6 @@
-import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import MainLayout from "../../MainLayout";
-import { Breadcrumbs, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Link, MenuItem, Paper, TextField, Typography } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Link, MenuItem, Paper, TextField, Typography } from "@mui/material";
 import { Event, FolderOpen, Lock, LockOpen } from "@mui/icons-material";
 import React from 'react';
 import { router, useForm, usePage } from "@inertiajs/react";
@@ -56,7 +56,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
         router.patch(`/evaluation-schedules/${evaluationSchedule.id}`, {
         }, {
             preserveScroll: true,
-            onSuccess: () => alert('dave medrano'),
+            onSuccess: () => console.log('for implementation...'),
         });
     };
 
@@ -135,11 +135,11 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                 flex: 1,
                 renderCell: (cell) => {
                     const evaluationTypeCode = cell.row.evaluation_type.code;
-    
+
                     let count;
                     let openCount;
                     let closedCount;
-    
+
                     if (evaluationTypeCode === 'student-to-teacher-evaluation') {
                         count = cell.row.subject_classes_count;
                         openCount = cell.row.subject_classes_open_count;
@@ -149,7 +149,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                         openCount = cell.row.evaluatees_open_count;
                         closedCount = cell.row.evaluatees_closed_count;
                     }
-    
+
                     return `${count} (Open: ${openCount} | Closed: ${closedCount})`;
                 },
             },
@@ -188,12 +188,13 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                 ];
 
                 if (includes(roles, "Evaluation Manager") && !!evaluationScheduleIsOpen) {
-                    actions.push(<GridActionsCellItem
-                        icon={<Lock />}
-                        label="Close Schedule"
-                        onClick={() => handleCloseEvaluationSchedule(row)}
-                        showInMenu
-                    />);
+                    // @todo for implementation...
+                    // actions.push(<GridActionsCellItem
+                    //     icon={<Lock />}
+                    //     label="Close Schedule"
+                    //     onClick={() => handleCloseEvaluationSchedule(row)}
+                    //     showInMenu
+                    // />);
                 }
 
                 return actions;
@@ -318,6 +319,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
             </Paper>}
             <DataGrid
                 columns={columns}
+                density="compact"
                 filterMode="server"
                 onFilterModelChange={handleFilterChange}
                 onPaginationModelChange={handlePaginationChange}
@@ -326,12 +328,11 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                 paginationModel={paginationModel}
                 rowCount={rowCount}
                 rows={evaluationSchedules.data}
-                slots={{ toolbar: GridToolbar }}
             />
         </>
     );
 };
 
-List.layout = page => <MainLayout children={page} title={"Evaluation Schedules"}/>;
+List.layout = page => <MainLayout children={page} title={"Evaluation Schedules"} />;
 
 export default List;

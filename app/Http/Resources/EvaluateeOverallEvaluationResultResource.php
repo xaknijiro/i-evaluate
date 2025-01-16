@@ -13,8 +13,9 @@ class EvaluateeOverallEvaluationResultResource extends JsonResource
         $evaluationResultService = resolve(EvaluationResultService::class);
 
         $evaluationResults = $this->evaluatees->map(function ($evaluatee) {
-            $evaluationResult = !$evaluatee->is_open ? $evaluatee->evaluationResult : null;
+            $evaluationResult = ! $evaluatee->is_open ? $evaluatee->evaluationResult : null;
             $weight = 0.25;
+
             return [
                 'evaluation_type' => $evaluatee->evaluationSchedule->evaluationType,
                 'evaluation_result' => $evaluationResult,
@@ -28,9 +29,9 @@ class EvaluateeOverallEvaluationResultResource extends JsonResource
             $studentToTeacherEvaluation = $evaluationScheduleSubjectClasses->first()->evaluationSchedule->evaluationType;
 
             $doCalculateWeightedRating = $evaluationScheduleSubjectClasses->count() === $evaluationScheduleSubjectClasses
-                ->filter(fn($evaluationScheduleSubjectClass) => !$evaluationScheduleSubjectClass->is_open && $evaluationScheduleSubjectClass->evaluationResult)
+                ->filter(fn ($evaluationScheduleSubjectClass) => ! $evaluationScheduleSubjectClass->is_open && $evaluationScheduleSubjectClass->evaluationResult)
                 ->count();
-            
+
             if ($doCalculateWeightedRating) {
                 $subjectClassesEvaluationResultPerCriterion = $evaluationScheduleSubjectClasses->pluck('evaluationResult.details.criteria');
                 $evaluationResultSummaryPerCriterion = collect();
@@ -51,12 +52,12 @@ class EvaluateeOverallEvaluationResultResource extends JsonResource
                             'weighted_rating' => $weightedRating,
                         ]];
                     });
-                
+
                 $evaluationResultSummaryOverallRating = round($evaluationResultSummaryPerCriterion->sum('weighted_rating'), 2);
-                    [$evaluationResultSummaryOverallRatingDescriptiveEquivalent, $evaluationResultSummaryOverallRatingPercentileEquivalent] = $evaluationResultService->getDescriptiveEquivalentAndPercentileEquivalent(
-                        $evaluationScheduleSubjectClasses->first()->evaluationSchedule->evaluationForm,
-                        $evaluationResultSummaryOverallRating
-                    );
+                [$evaluationResultSummaryOverallRatingDescriptiveEquivalent, $evaluationResultSummaryOverallRatingPercentileEquivalent] = $evaluationResultService->getDescriptiveEquivalentAndPercentileEquivalent(
+                    $evaluationScheduleSubjectClasses->first()->evaluationSchedule->evaluationForm,
+                    $evaluationResultSummaryOverallRating
+                );
 
                 $evaluationResultSummary = [
                     'criteria' => $evaluationResultSummaryPerCriterion,
@@ -91,7 +92,7 @@ class EvaluateeOverallEvaluationResultResource extends JsonResource
             'email' => $this->email,
             'department' => $this->when($this->departments->first(), DepartmentResource::make($this->departments->first())),
             'evaluation_results' => $evaluationResults,
-            'overall_weighted_rating' => $evaluationResults->filter(fn ($evaluationResult) => !is_null($evaluationResult['weighted_rating']))->count() === 4
+            'overall_weighted_rating' => $evaluationResults->filter(fn ($evaluationResult) => ! is_null($evaluationResult['weighted_rating']))->count() === 4
                 ? round($evaluationResults->sum('weighted_rating'), 2) : null,
         ];
     }
