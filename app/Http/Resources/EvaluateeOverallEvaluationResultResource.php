@@ -12,9 +12,16 @@ class EvaluateeOverallEvaluationResultResource extends JsonResource
     {
         $evaluationResultService = resolve(EvaluationResultService::class);
 
-        $evaluationResults = $this->evaluatees->map(function ($evaluatee) {
+        $evaluationTypeWeight = [
+            'peer-evaluation' => .10,
+            'student-to-teacher-evaluation' => .40,
+            'dean-to-teacher-evaluation' => .40,
+            'self-evaluation' => .10,
+        ];
+
+        $evaluationResults = $this->evaluatees->map(function ($evaluatee) use ($evaluationTypeWeight) {
             $evaluationResult = ! $evaluatee->is_open ? $evaluatee->evaluationResult : null;
-            $weight = 0.25;
+            $weight = $evaluationTypeWeight[$evaluatee->evaluationSchedule->evaluationType->code];
 
             return [
                 'evaluation_type' => $evaluatee->evaluationSchedule->evaluationType,
