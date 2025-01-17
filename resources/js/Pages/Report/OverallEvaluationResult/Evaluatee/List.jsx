@@ -1,16 +1,18 @@
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import MainLayout from "../../../../MainLayout";
-import { Link, Typography } from "@mui/material";
+import { FormControl, InputLabel, Link, MenuItem, Paper, Select, TextField, Typography } from "@mui/material";
 import { Event, FolderOpen, HourglassBottomTwoTone } from "@mui/icons-material";
 import React from 'react';
 import { router, usePage } from "@inertiajs/react";
 import { PieChart } from "@mui/x-charts";
+import { includes } from "lodash";
 
-const List = ({ academic_year: academicYear, semester_id: semesterId, evaluatees }) => {
+const List = ({ academic_year: academicYear, semester_id: semesterId, semester, filters, departments, evaluatees }) => {
     const { auth } = usePage().props;
     const { roles } = auth;
 
-    console.log(usePage().props);
+    const targetRefQuickSearch = React.useRef();
+    const targetRefFiltersDepartment = React.useRef();
 
     const [paginationModel, setPaginationModel] = React.useState({
         page: evaluatees.meta.current_page - 1,
@@ -27,13 +29,18 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, evaluatees
     }, [evaluatees?.meta?.total]);
 
     const handlePaginationChange = (newPaginationModel) => {
-        router.get(`/reports/overall-evaluation-results/${academicYear}/${semesterId}/evaluatees`, {
-            page: newPaginationModel.page + 1,
-            per_page: newPaginationModel.pageSize,
-        }, {
-            preserveScroll: true,
-            onSuccess: () => setPaginationModel(newPaginationModel),
-        });
+        const queryParams = new URLSearchParams(window.location.search);
+        queryParams.set('page', newPaginationModel.page + 1);
+        queryParams.set('per_page', newPaginationModel.pageSize);
+
+        router.get(
+            `/reports/overall-evaluation-results/${academicYear}/${semesterId}/evaluatees?${queryParams.toString()}`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => setPaginationModel(newPaginationModel),
+            }
+        );
     };
 
     const commonColumns = [
@@ -53,6 +60,15 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, evaluatees
             headerName: 'First Name',
         },
         {
+            field: 'department',
+            headerName: 'Department',
+            flex: 0.2,
+            renderCell: (cell) => {
+                const { value: department } = cell;
+                return department?.code;
+            },
+        },
+        {
             field: 'student-to-teacher-evaluation',
             headerName: 'Student to Teacher Evaluation',
             flex: 0.15,
@@ -60,7 +76,7 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, evaluatees
                 const { field, row } = cell;
                 const { evaluation_results } = row;
                 const evaluationResult = evaluation_results.find(evaluationResult => evaluationResult.evaluation_type.code === field);
-                return  evaluationResult?.weighted_rating?.toFixed(2) ?? <HourglassBottomTwoTone />;
+                return evaluationResult?.weighted_rating?.toFixed(2) ?? <HourglassBottomTwoTone />;
             },
         },
         {
@@ -71,7 +87,7 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, evaluatees
                 const { field, row } = cell;
                 const { evaluation_results } = row;
                 const evaluationResult = evaluation_results.find(evaluationResult => evaluationResult.evaluation_type.code === field);
-                return  evaluationResult?.weighted_rating?.toFixed(2) ?? <HourglassBottomTwoTone />;
+                return evaluationResult?.weighted_rating?.toFixed(2) ?? <HourglassBottomTwoTone />;
             },
         },
         {
@@ -82,7 +98,7 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, evaluatees
                 const { field, row } = cell;
                 const { evaluation_results } = row;
                 const evaluationResult = evaluation_results.find(evaluationResult => evaluationResult.evaluation_type.code === field);
-                return  evaluationResult?.weighted_rating?.toFixed(2) ?? <HourglassBottomTwoTone />;
+                return evaluationResult?.weighted_rating?.toFixed(2) ?? <HourglassBottomTwoTone />;
             },
         },
         {
@@ -93,7 +109,7 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, evaluatees
                 const { field, row } = cell;
                 const { evaluation_results } = row;
                 const evaluationResult = evaluation_results.find(evaluationResult => evaluationResult.evaluation_type.code === field);
-                return  evaluationResult?.weighted_rating?.toFixed(2) ?? <HourglassBottomTwoTone />;
+                return evaluationResult?.weighted_rating?.toFixed(2) ?? <HourglassBottomTwoTone />;
             },
         },
         {
@@ -134,8 +150,57 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, evaluatees
                 sx={{ alignItems: 'center', display: 'flex' }}
                 variant="h4">
                 <Event fontSize="inherit" sx={{ mr: 0.5 }} />
-                {semesterId} {academicYear} Overall Evaluation Results
+                {semester} {academicYear} Overall Evaluation Results
             </Typography>
+
+            {includes(roles, 'Evaluation Manager') && <Paper variant="outlined" sx={{ mb: 4, p: 2 }}>
+                <TextField
+                    defaultValue={filters?.search || ''}
+                    inputRef={targetRefQuickSearch}
+                    fullWidth
+                    label="Quick Search"
+                    onKeyUp={(e) => {
+                        if (e.key === 'Enter') {
+                            const queryParams = new URLSearchParams(window.location.search);
+                            queryParams.delete('page');
+                            queryParams.set('search', targetRefQuickSearch.current.value);
+                            router.get(
+                                `/reports/overall-evaluation-results/${academicYear}/${semesterId}/evaluatees?${queryParams.toString()}`,
+                                {},
+                                { preserveScroll: true }
+                            );
+                        }
+                    }}
+                    variant="outlined"
+                    sx={{ mb: 4 }}
+                />
+                <FormControl fullWidth>
+                    <InputLabel id="demo-select-small-label">Department</InputLabel>
+                    <Select
+                        labelId="demo-select-small-label"
+                        id="demo-select-small"
+                        defaultValue={filters?.department || 0}
+                        inputRef={targetRefFiltersDepartment}
+                        label="Department"
+                        onChange={(_event, item) => {
+                            const { props } = item;
+                            const { value } = props;
+                            const queryParams = new URLSearchParams(window.location.search);
+                            queryParams.delete('page');
+                            queryParams.set('department', value);
+                            router.get(
+                                `/reports/overall-evaluation-results/${academicYear}/${semesterId}/evaluatees?${queryParams.toString()}`,
+                                {},
+                                { preserveScroll: true }
+                            );
+                        }}
+                    >
+                        <MenuItem value={0}><em>All</em></MenuItem>
+                        {departments.data.map((department) => <MenuItem value={department.id}>({department.code}) {department.title}</MenuItem>)}
+                    </Select>
+                </FormControl>
+            </Paper>}
+
             <DataGrid
                 columns={columns}
                 density="compact"

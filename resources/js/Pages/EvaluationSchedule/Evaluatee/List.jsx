@@ -1151,7 +1151,7 @@ const List = ({ departments, errors, evaluationSchedule, evaluatees }) => {
                         }}
                     >
                         <MenuItem value={0}><em>All</em></MenuItem>
-                        {departments.data.map((department) => <MenuItem value={department.id}>{department.title}</MenuItem>)}
+                        {departments.data.map((department) => <MenuItem value={department.id}>({department.code}) {department.title}</MenuItem>)}
                     </Select>
                 </FormControl>
             </Paper>}

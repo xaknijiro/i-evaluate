@@ -11,6 +11,13 @@ class SemesterRepository
         protected Semester $semester
     ) {}
 
+    public function getSemesterById(int $id): Semester
+    {
+        return $this->semester->newQuery()
+            ->where('id', $id)
+            ->first();
+    }
+
     public function getSemesters(): Collection
     {
         return $this->semester->newQuery()

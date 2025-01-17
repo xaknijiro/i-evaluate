@@ -304,6 +304,14 @@ class EvaluationScheduleService
             });
         }
 
+        if ($filters['department'] ?? false && ! $filters['department']) {
+            $departmentId = $filters['department'];
+            $query->whereHas('departments', function (Builder $query) use ($departmentId) {
+                $relationTable = $query->getModel()->getTable();
+                $query->where("$relationTable.id", $departmentId);
+            });
+        }
+
         $query
             ->with('subjectClasses', function (Builder|HasMany $query) use ($academicYear, $semesterId) {
                 $query->with('evaluationScheduleSubjectClass', function (Builder|HasOne $query) use ($academicYear, $semesterId) {
