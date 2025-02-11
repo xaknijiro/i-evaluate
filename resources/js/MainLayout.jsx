@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@emotion/react";
 import { Head, router, usePage } from "@inertiajs/react";
 import { AccountCircle, Apartment, AssessmentTwoTone, CalendarMonthTwoTone, DashboardTwoTone, Description, ExpandLess, ExpandMore, FolderTwoTone, InfoTwoTone, ListAlt, ListAltTwoTone, Logout, Menu, People, School, SettingsTwoTone } from "@mui/icons-material";
-import { Alert, AppBar, Avatar, Box, Collapse, Container, createTheme, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Snackbar, Toolbar, Typography } from "@mui/material";
+import { Alert, AppBar, Avatar, Box, Collapse, Container, createTheme, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Snackbar, Stack, Toolbar, Typography } from "@mui/material";
 import React from 'react';
 import { includes } from 'lodash';
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -252,6 +252,10 @@ const MainLayout = ({ children, title }) => {
                             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                                 I-Evaluate | {title}
                             </Typography>
+                            <Stack textAlign="center" marginRight={2}>
+                                <Typography variant="body1">{name}</Typography>
+                                <Typography variant="caption">{email}</Typography>
+                            </Stack>
                             <IconButton
                                 size="large"
                                 edge="start"
