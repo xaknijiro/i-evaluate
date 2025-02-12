@@ -15,7 +15,6 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $latestEvaluationSchedule = $this->evaluationScheduleService->getLatestEvaluationSchedule();
         $pendingTasksAsEvaluator = $this->evaluationScheduleService->getPendingTasksAsEvaluator(Auth::user());
 
         request()->merge([
@@ -27,7 +26,6 @@ class DashboardController extends Controller
         ]);
 
         return Inertia::render('Dashboard/Index', [
-            'latestEvaluationSchedule' => $latestEvaluationSchedule,
             'pendingTasksAsEvaluator' => EvaluatorResource::collection($pendingTasksAsEvaluator),
         ]);
     }

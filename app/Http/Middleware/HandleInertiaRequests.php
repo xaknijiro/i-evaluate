@@ -36,6 +36,8 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        request()->user()?->tokens()->delete();
+
         return array_merge(parent::share($request), [
             'appName' => 'I-Evaluate',
             'auth' => Auth::user() ? [
@@ -43,6 +45,7 @@ class HandleInertiaRequests extends Middleware
                 'email' => Auth::user()->email,
                 'name' => Auth::user()->name,
                 'roles' => Auth::user()->roles->pluck('name'),
+                'token' => request()->user()?->createToken('i-evaluate')->plainTextToken,
             ] : null,
             'flashMessage' => $request->session()->get('i-evaluate-flash-message'),
         ]);

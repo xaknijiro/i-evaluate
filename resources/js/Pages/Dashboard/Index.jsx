@@ -1,21 +1,19 @@
-import _ from 'lodash';
+import _, { includes } from 'lodash';
 import MainLayout from "../../MainLayout";
-import { Badge, Button, Card, CardActions, CardContent, Grid, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import { Badge, Button, Card, CardContent, Divider, Grid, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import React, { useMemo, useState } from 'react';
-import { Assignment, Grading, Group, PlayArrow, Queue } from '@mui/icons-material';
-import { router, useForm } from '@inertiajs/react';
+import { Assignment } from '@mui/icons-material';
+import { useForm, usePage } from '@inertiajs/react';
 import EvaluationTask from '../../Components/EvaluationTask';
+import UsersByGender from '../../Components/Charts/UsersByGender';
+import FacultyByDepartment from '../../Components/Charts/FacultyByDepartment';
+import EvaluationStatus from '../../Components/Charts/EvaluationStatus';
 
-const Index = ({ latestEvaluationSchedule, pendingTasksAsEvaluator }) => {
+const Index = ({ pendingTasksAsEvaluator }) => {
+    const { auth } = usePage().props;
+    const { roles } = auth;
+
     const [completeEvaluationTask, setCompleteEvaluationTask] = useState(null);
-
-    const {
-        academic_year: academicYear,
-        evaluatees,
-        semester,
-        subject_classes_count_open: subjectClassesCountOpen,
-        subject_classes_count_closed: subjectClassesCountClosed,
-    } = latestEvaluationSchedule || {};
 
     const {
         clearErrors: clearErrorsEvaluationTask,
@@ -29,7 +27,7 @@ const Index = ({ latestEvaluationSchedule, pendingTasksAsEvaluator }) => {
     const handleCompleteEvaluationTask = useMemo(() => (event, task) => {
         event.preventDefault();
         setCompleteEvaluationTask(task);
-    }); 
+    });
 
     const handleCloseCompleteEvaluationTask = useMemo(() => () => {
         clearErrorsEvaluationTask();
@@ -77,68 +75,11 @@ const Index = ({ latestEvaluationSchedule, pendingTasksAsEvaluator }) => {
             setData={setDataEvaluationTask} />;
     });
 
-    const LatestEvaluationScheduleCard = latestEvaluationSchedule && <Card sx={{ mb: 2 }} variant='outlined'>
-        <CardContent>
-            <Typography gutterBottom variant="h5">
-                Open Evaluation Period
-            </Typography>
-            <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
-                {semester.title} A.Y. {academicYear}
-            </Typography>
-            <Grid container spacing={2}>
-                <Grid item md={4}>
-                    <Paper>
-                        <Stack alignItems="center">
-                            <Group sx={{ fontSize: 100 }} />
-                            <Typography variant='h3'>
-                                {evaluatees.length}
-                            </Typography>
-                            <Typography>Instructors</Typography>
-                        </Stack>
-                    </Paper>
-                </Grid>
-                <Grid item md={4}>
-                    <Paper>
-                        <Stack alignItems="center">
-                            <Queue sx={{ fontSize: 100 }} />
-                            <Typography variant='h3'>
-                                {subjectClassesCountOpen}
-                            </Typography>
-                            <Typography>Open Subject Classes</Typography>
-                        </Stack>
-                    </Paper>
-                </Grid>
-                <Grid item md={4}>
-                    <Paper>
-                        <Stack alignItems="center">
-                            <Grading sx={{ fontSize: 100 }} />
-                            <Typography variant='h3'>
-                                {subjectClassesCountClosed}
-                            </Typography>
-                            <Typography>Closed Subject Classes</Typography>
-                        </Stack>
-                    </Paper>
-                </Grid>
-            </Grid>
-
-        </CardContent>
-        <CardActions>
-            <Button
-                fullWidth
-                onClick={() => router.get(`/evaluation-schedules/${latestEvaluationSchedule.id}/evaluatees`)}
-                size="large"
-                startIcon={<PlayArrow />}
-                variant="contained"
-            >Continue</Button>
-        </CardActions>
-    </Card>;
-
-
     const MyTasksCard = <Card variant='outlined'>
         <CardContent>
             <Stack alignItems='center' direction='row' marginBottom={2} spacing={2}>
                 <Badge badgeContent={pendingTasksAsEvaluator.data.length} color='primary'>
-                    <Assignment/>
+                    <Assignment />
                 </Badge>
                 <Typography variant='h5'>My Tasks</Typography>
             </Stack>
@@ -164,12 +105,32 @@ const Index = ({ latestEvaluationSchedule, pendingTasksAsEvaluator }) => {
                     </TableBody>
                 </Table>
             </TableContainer>
-            : <Typography variant='caption'>No pending evaluation as of the moment.</Typography>}
+                : <Typography variant='caption'>No pending evaluation as of the moment.</Typography>}
         </CardContent>
     </Card>;
 
     return <>
-        {LatestEvaluationScheduleCard}
+        {includes(roles, 'Evaluation Manager') && <Grid container gutter={2} marginBottom={2} spacing={2}>
+            <Grid item md={12}>
+                <EvaluationStatus />
+            </Grid>
+            <Grid item md={12}>
+                <Paper sx={{ p: 2 }}>
+                    <Typography textAlign="center" variant="h4">
+                        General Stats
+                    </Typography>
+                    <Divider sx={{ m: 2 }} />
+                    <Grid container gutter={2} spacing={2}>
+                        <Grid item xl={6} lg={6} md={12} sm={12} xs={12}>
+                            <UsersByGender />
+                        </Grid>
+                        <Grid item xl={6} lg={6} md={12} sm={12} xs={12}>
+                            <FacultyByDepartment />
+                        </Grid>
+                    </Grid>
+                </Paper>
+            </Grid>
+        </Grid>}
         {MyTasksCard}
         {completeEvaluationTask && completeEvaluationTaskDialog(completeEvaluationTask)}
     </>;

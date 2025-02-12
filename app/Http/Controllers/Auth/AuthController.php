@@ -26,6 +26,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+            $request->user()->tokens()->delete();
 
             return redirect()->intended();
         }
@@ -37,6 +38,7 @@ class AuthController extends Controller
 
     public function destroy()
     {
+        request()->user()->tokens()->delete();
         Auth::logout();
 
         return redirect()->route('login');
