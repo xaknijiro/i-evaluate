@@ -114,7 +114,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
             headerName: 'Evaluation Type',
             flex: 1,
             valueGetter: (row) => {
-                return row.value.title;
+                return row.title;
             },
         },
     ];
@@ -127,7 +127,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                 headerName: 'Evaluation Form',
                 flex: 1,
                 valueGetter: (row) => {
-                    return `${row.value.id} - ${row.value.title}`;
+                    return `${row.id} - ${row.title}`;
                 },
             },
             {
@@ -275,7 +275,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                             sx={{ width: "100%" }}
                             select
                         >
-                            {semesters.data.map((semester) => <MenuItem value={semester.id}>
+                            {semesters.data.map((semester) => <MenuItem key={`semester-${semester.id}`} value={semester.id}>
                                 {semester.title}
                             </MenuItem>)}
                         </TextField>
@@ -292,7 +292,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                             fullWidth
                             select
                         >
-                            {evaluationTypes.data.map((evaluationType) => <MenuItem value={evaluationType.id}>
+                            {evaluationTypes.data.map((evaluationType) => <MenuItem key={`evaluation-type-${evaluationType.id}`} value={evaluationType.id}>
                                 {evaluationType.title}
                             </MenuItem>)}
                         </TextField>
@@ -309,7 +309,7 @@ const List = ({ evaluationSchedules, evaluationTypes, evaluationForms, semesters
                             fullWidth
                             select
                         >
-                            {evaluationForms.data.map((evaluationForm) => <MenuItem value={evaluationForm.id}>
+                            {evaluationForms.data.map((evaluationForm) => <MenuItem key={`evaluation-form-${evaluationForm.id}`} value={evaluationForm.id}>
                                 {evaluationForm.title}
                             </MenuItem>)}
                         </TextField>

@@ -32,7 +32,7 @@ export default function FacultyByDepartment() {
 
     return <Paper sx={{ p: 2 }}>
         {!isLoading && <BarChart
-            height={300}
+            height={175}
             xAxis={[
                 {
                     scaleType: 'band',

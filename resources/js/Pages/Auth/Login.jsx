@@ -3,8 +3,6 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
@@ -13,22 +11,20 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Head, router, usePage } from '@inertiajs/react';
-import { ErrorSharp } from '@mui/icons-material';
 
 function Copyright(props) {
+  const { appName } = usePage().props;
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
       <Link color="inherit" href="#">
-        I-Evaluate
+        {appName}
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
     </Typography>
   );
 }
-
-// TODO remove, this demo shouldn't need to reset the theme.
 
 const defaultTheme = createTheme();
 
@@ -60,7 +56,7 @@ const Login = ({ errors }) => {
             backgroundRepeat: 'no-repeat',
             backgroundColor: (t) =>
               t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
-            backgroundSize: 'contain',
+            backgroundSize: '33%',
             backgroundPosition: 'center',
           }}
         />

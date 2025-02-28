@@ -7,13 +7,16 @@ use App\Mail\EvaluationCompleteNotification;
 use App\Models\EvaluationPasscode;
 use App\Models\EvaluationResponse;
 use App\Models\EvaluationScheduleSubjectClass;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Intervention\Image\Laravel\Facades\Image;
 
 class EvaluationScheduleSubjectClassController extends Controller
 {
@@ -112,6 +115,14 @@ class EvaluationScheduleSubjectClassController extends Controller
         $evaluationType = $evaluationPasscode->evaluationScheduleSubjectClass->evaluationSchedule->evaluationType->title;
         $evaluationForm = $evaluationPasscode->evaluationScheduleSubjectClass->evaluationSchedule->evaluationForm;
 
+        $institutionId = $subjectClass->assignedTo->institution_id;
+        try {
+            $filePath = storage_path("profile_photos/$institutionId.jpg");
+            $profilePhoto = Image::read(File::get($filePath))->toJpeg()->toDataUri();
+        } catch (Exception $e) {
+            $profilePhoto = null;
+        }
+
         return Inertia::render('Evaluate/ScheduledSubject/Show', [
             'id' => $id,
             'code' => $code,
@@ -123,6 +134,7 @@ class EvaluationScheduleSubjectClassController extends Controller
             'assignedTo' => $assignedTo,
             'evaluationType' => $evaluationType,
             'evaluationForm' => $evaluationForm,
+            'profilePhoto' => $profilePhoto,
         ]);
     }
 

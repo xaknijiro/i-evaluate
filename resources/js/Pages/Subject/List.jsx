@@ -60,7 +60,7 @@ const List = ({ errors, subjects }) => {
             flex: 0.5,
             headerName: 'Department',
             sortable: false,
-            valueGetter: (cell) => `${cell.row.department.code} - ${cell.row.department.title}`,
+            valueGetter: (department) => `${department.code} - ${department.title}`,
         }
     ];
 
@@ -123,6 +123,6 @@ const List = ({ errors, subjects }) => {
     );
 };
 
-List.layout = page => <MainLayout children={page} title="Evaluation Forms" />;
+List.layout = page => <MainLayout children={page} title="Subjects" />;
 
 export default List;

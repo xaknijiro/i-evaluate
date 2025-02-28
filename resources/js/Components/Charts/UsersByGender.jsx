@@ -27,7 +27,7 @@ export default function UsersByGender() {
 
     return <Paper sx={{ p: 2 }}>
         {!isLoading && <PieChart
-            height={300}
+            height={175}
             series={[
                 {
                     data,

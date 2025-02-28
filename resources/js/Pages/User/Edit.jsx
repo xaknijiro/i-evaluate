@@ -1,9 +1,8 @@
-import { DataGrid } from "@mui/x-data-grid";
 import MainLayout from "../../MainLayout";
-import { Accordion, AccordionDetails, AccordionSummary, Avatar, Box, Button, Chip, Grid, Link, MenuItem, Paper, Stack, styled, TextField, Typography } from "@mui/material";
-import { AccountCircle, ArrowDownward, Badge, CloudUpload, Email, ListAlt, School } from "@mui/icons-material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Grid, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import { ArrowDownward, Badge, Email, ListAlt, School } from "@mui/icons-material";
 import React from 'react';
-import { router } from "@inertiajs/react";
+import ProfilePhoto from "../../Components/Users/ProfilePhoto";
 
 const Edit = ({ departments, user }) => {
     const {
@@ -17,11 +16,12 @@ const Edit = ({ departments, user }) => {
 
     return (
         <>
+            <ProfilePhoto/>
             <Accordion defaultExpanded>
                 <AccordionSummary
                     expandIcon={<ArrowDownward />}
                 >
-                    <ListAlt sx={{ mr: 2 }}/>
+                    <ListAlt sx={{ mr: 2 }} />
                     <Typography flex={1}>Basic Information</Typography>
                 </AccordionSummary>
                 <AccordionDetails>

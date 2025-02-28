@@ -4,6 +4,7 @@ RUN apt-get update && \
     apt-get install -y zip && \
     apt-get install -y mariadb-client && \
     apt-get install -y npm && \
+    apt-get install -y libfreetype6-dev libjpeg62-turbo-dev libpng-dev && \
     apt-get autoclean
 
 RUN docker-php-ext-install bcmath
@@ -15,6 +16,9 @@ RUN docker-php-ext-install pdo
 RUN docker-php-ext-install pdo_mysql
 
 RUN docker-php-ext-install sockets
+
+RUN docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ && \
+    docker-php-ext-install gd
 
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 
@@ -36,4 +40,8 @@ RUN nvm install --lts | bash
 
 RUN nvm use --lts | bash
 
+RUN npm install -g npm-check-updates
+
 WORKDIR /var/www/html
+
+RUN git config --global --add safe.directory /var/www/html | bash

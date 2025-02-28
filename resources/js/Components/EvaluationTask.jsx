@@ -1,7 +1,8 @@
 import * as React from 'react';
 import Container from '@mui/material/Container';
-import { Alert, AppBar, Box, Button, Dialog, Divider, IconButton, Paper, Rating, Stack, TextField, Toolbar, Typography } from '@mui/material';
+import { Alert, AppBar, Avatar, Box, Button, Dialog, Divider, IconButton, Paper, Rating, Stack, TextField, Toolbar, Typography } from '@mui/material';
 import { AccountCircle, Close } from '@mui/icons-material';
+import UserPhoto from './Users/UserPhoto';
 
 export default function EvaluationTask({
     data,
@@ -35,8 +36,9 @@ export default function EvaluationTask({
     >
         <AppBar sx={{ position: 'fixed' }}>
             <Toolbar>
+                <UserPhoto userId={evaluatee.user_id} height={75} width={75}/>
                 <Typography alignItems='center' component='h1' display='flex' flexGrow={1} variant='h5'>
-                    <AccountCircle sx={{ mr: 0.5 }} />{evaluateeName}
+                    {evaluateeName}
                 </Typography>
                 <IconButton
                     edge="start"

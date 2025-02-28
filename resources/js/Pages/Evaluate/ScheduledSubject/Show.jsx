@@ -1,11 +1,11 @@
 import * as React from 'react';
 import Container from '@mui/material/Container';
 import { Head, router } from '@inertiajs/react';
-import { Alert, AppBar, Box, Button, Chip, createTheme, Divider, Paper, Rating, Stack, TextField, Toolbar, Typography } from '@mui/material';
+import { Alert, AppBar, Avatar, Box, Button, Chip, createTheme, Divider, Paper, Rating, Stack, TextField, Toolbar, Typography } from '@mui/material';
 import { AccountCircle, DateRange, Password, School, Subject } from '@mui/icons-material';
 import { ThemeProvider } from '@emotion/react';
 
-export default function Show({ errors, id, code, subject, academicYear, semester, course, yearLevel, assignedTo, evaluationType, evaluationForm }) {
+export default function Show({ errors, id, code, subject, academicYear, semester, course, yearLevel, assignedTo, evaluationType, evaluationForm, profilePhoto }) {
     const theme = createTheme({
         palette: {
             mode: 'light',
@@ -44,9 +44,9 @@ export default function Show({ errors, id, code, subject, academicYear, semester
             <React.Fragment>
                 <AppBar position="fixed">
                     <Toolbar>
+                        <Avatar src={profilePhoto} sx={{ height: 100, width: 100 }}/>    
                         <Box padding={2}>
                             <Stack alignItems="center" direction="row" marginBottom={2} spacing={1}>
-                                <AccountCircle />
                                 <Typography component="h1" variant="h5">
                                     {assignedTo}
                                 </Typography>

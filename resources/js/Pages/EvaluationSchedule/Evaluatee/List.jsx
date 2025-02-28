@@ -1177,7 +1177,7 @@ const List = ({ departments, errors, evaluationSchedule, evaluatees }) => {
                             field: 'evaluation_code',
                             headerName: 'Evaluation Code',
                             width: 150,
-                            valueGetter: (cell) => cell.row.evaluation?.code,
+                            valueGetter: (_cell, row) => row.evaluation?.code,
                         },
                         {
                             field: 'section',
@@ -1188,13 +1188,15 @@ const List = ({ departments, errors, evaluationSchedule, evaluatees }) => {
                             field: 'subject',
                             headerName: 'Subject',
                             width: 200,
-                            valueGetter: (cell) => `${cell.row.subject.code} - ${cell.row.subject.title}`,
+                            valueGetter: (subject) => `${subject.code} - ${subject.title}`,
                         },
                         {
-                            field: 'course_and_year_level',
+                            field: 'course',
                             headerName: 'Course/Yr.',
                             width: 150,
-                            valueGetter: (cell) => `${cell.row.course.code} - ${cell.row.year_level}`,
+                            valueGetter: (course, row) => {
+                                return `${course.code} - ${row.year_level}`;
+                            },
                         },
                         {
                             field: 'schedule',

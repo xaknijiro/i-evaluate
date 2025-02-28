@@ -2,9 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Inertia\Middleware;
+use Intervention\Image\Laravel\Facades\Image;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -38,12 +41,24 @@ class HandleInertiaRequests extends Middleware
     {
         request()->user()?->tokens()->delete();
 
+        $profilePhoto = null;
+        if (Auth::user()) {
+            $institutionId = Auth::user()->institution_id;
+            try {
+                $filePath = storage_path("profile_photos/$institutionId.jpg");
+                $profilePhoto = Image::read(File::get($filePath))->toJpeg()->toDataUri();
+            } catch (Exception $e) {
+                $profilePhoto = null;
+            }
+        }
+
         return array_merge(parent::share($request), [
             'appName' => 'I-Evaluate',
             'auth' => Auth::user() ? [
                 'id' => Auth::user()->id,
                 'email' => Auth::user()->email,
                 'name' => Auth::user()->name,
+                'profile_photo' => $profilePhoto,
                 'roles' => Auth::user()->roles->pluck('name'),
                 'token' => request()->user()?->createToken('i-evaluate')->plainTextToken,
             ] : null,

@@ -3,10 +3,15 @@
 use App\Models\Department;
 use App\Models\EvaluationSchedule;
 use App\Models\EvaluationType;
+use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -32,6 +37,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         Route::group(['prefix' => '/pie'], function () {
             Route::get('/evaluation-status', function () {
+                $semesters = Semester::all();
                 $evaluationTypes = EvaluationType::all();
                 $departments = Department::orderBy('code')->get();
 
@@ -44,6 +50,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
                 ])->get();
                 $selectedAcademicYear = $schedules->first()->academic_year;
                 $selectedSemester = $schedules->first()->semester;
+
+                $selectedAcademicYear = request()->input('academic_year', $selectedAcademicYear);
+                if (request()->has('semester_id')) {
+                    $selectedSemester = $semesters->where('id', request()->input('semester_id'))->first();
+                }
 
                 $evaluationSchedules = EvaluationSchedule::where([
                     'academic_year' => $selectedAcademicYear,
@@ -121,8 +132,38 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
                     ];
                 });
 
+                $evaluationTypes->whereInstanceOf(EvaluationType::class)->each(function (EvaluationType $evaluationType) use ($evaluationSchedules) {
+                    if (!$evaluationSchedules->get($evaluationType->code)) {
+                        $evaluationSchedules[$evaluationType->code] = (object)[
+                            'label' => $evaluationType->title,
+                            'chartData' => (object)[
+                                'statuses' => [
+                                    (object)[
+                                        'label' => 'Open',
+                                        'value' => 0,
+                                    ],
+                                    (object)[
+                                        'label' => 'Closed',
+                                        'value' => 0,
+                                    ],
+                                ],
+                                'respondents' => [
+                                    (object)[
+                                        'label' => 'Did Not Respond',
+                                        'value' => 0,
+                                    ],
+                                    (object)[
+                                        'label' => 'Responded',
+                                        'value' => 0,
+                                    ],
+                                ],
+                            ],
+                        ];
+                    }
+                });
+
                 $evaluationSchedulesByDepartment = $departments->keyBy('code')
-                    ->map(function (Department $department) use ($selectedAcademicYear, $selectedSemester) {
+                    ->map(function (Department $department) use ($evaluationTypes, $selectedAcademicYear, $selectedSemester) {
                         $evaluationSchedules = EvaluationSchedule::where([
                             'academic_year' => $selectedAcademicYear,
                             'semester_id' => $selectedSemester->id,
@@ -223,10 +264,41 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
                             ];
                         });
 
+                        $evaluationTypes->whereInstanceOf(EvaluationType::class)->each(function (EvaluationType $evaluationType) use ($evaluationSchedules) {
+                            if (!$evaluationSchedules->get($evaluationType->code)) {
+                                $evaluationSchedules[$evaluationType->code] = (object)[
+                                    'label' => $evaluationType->title,
+                                    'chartData' => (object)[
+                                        'statuses' => [
+                                            (object)[
+                                                'label' => 'Open',
+                                                'value' => 0,
+                                            ],
+                                            (object)[
+                                                'label' => 'Closed',
+                                                'value' => 0,
+                                            ],
+                                        ],
+                                        'respondents' => [
+                                            (object)[
+                                                'label' => 'Did Not Respond',
+                                                'value' => 0,
+                                            ],
+                                            (object)[
+                                                'label' => 'Responded',
+                                                'value' => 0,
+                                            ],
+                                        ],
+                                    ],
+                                ];
+                            }
+                        });
+
                         return $evaluationSchedules;
                     });
 
                 return [
+                    'semesters' => $semesters,
                     'evaluationTypes' => $evaluationTypes,
                     'selectedAcademicYear' => $selectedAcademicYear,
                     'selectedSemester' => $selectedSemester,
@@ -253,5 +325,27 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
                 });
             });
         });
+    });
+
+    Route::get('/users/{user}/profile-photo', function (User $user) {
+        $institutionId = $user->institution_id;
+        try {
+            $filePath = storage_path("profile_photos/$institutionId.jpg");
+            return Image::read(File::get($filePath))->toJpeg()->toDataUri();
+        } catch (Exception $e) {
+            return null;
+        }
+    });
+
+    Route::post('/users/{user}/profile-photo', function (Request $request, User $user) {
+        $institutionId = $user->institution_id;
+        $requestFilePath = $request->file('profile_photo');
+        try {
+            $filePath = storage_path("profile_photos/$institutionId.jpg");
+            Image::read($requestFilePath)->scale(200, 200)->toJpeg()->save($filePath);
+            return Image::read(File::get($filePath))->toJpeg()->toDataUri();
+        } catch (Exception $e) {
+            abort(422);
+        }        
     });
 });

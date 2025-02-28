@@ -1,6 +1,6 @@
 import { ThemeProvider } from "@emotion/react";
 import { Head, router, usePage } from "@inertiajs/react";
-import { AccountCircle, Apartment, AssessmentTwoTone, CalendarMonthTwoTone, DashboardTwoTone, Description, ExpandLess, ExpandMore, FolderTwoTone, InfoTwoTone, ListAlt, ListAltTwoTone, Logout, Menu, People, School, SettingsTwoTone } from "@mui/icons-material";
+import { Apartment, AssessmentTwoTone, CalendarMonthTwoTone, DashboardTwoTone, Description, ExpandLess, ExpandMore, FolderTwoTone, InfoTwoTone, ListAlt, ListAltTwoTone, Logout, Menu, People, School, SettingsTwoTone } from "@mui/icons-material";
 import { Alert, AppBar, Avatar, Box, Collapse, Container, createTheme, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Snackbar, Stack, Toolbar, Typography } from "@mui/material";
 import React from 'react';
 import { includes } from 'lodash';
@@ -22,7 +22,7 @@ const MainLayout = ({ children, title }) => {
     });
 
     const { auth, flashMessage } = usePage().props;
-    const { roles } = auth;
+    const { profile_photo: profilePhoto, roles } = auth;
     const { id, email, name } = auth;
     const [openAppDrawer, setOpenAppDrawer] = React.useState(false);
     const [openUserDrawer, setOpenUserDrawer] = React.useState(false);
@@ -202,9 +202,11 @@ const MainLayout = ({ children, title }) => {
                     alignItems: 'center',
                 }}
             >
-                <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                    <AccountCircle />
-                </Avatar>
+                <Avatar
+                    alt={name}
+                    src={profilePhoto}
+                    sx={{ m: 1, bgcolor: 'secondary.main'}}
+                />
                 <Typography variant="h5">{name}</Typography>
                 <Typography variant="caption">{email}</Typography>
             </Box>
@@ -256,16 +258,12 @@ const MainLayout = ({ children, title }) => {
                                 <Typography variant="body1">{name}</Typography>
                                 <Typography variant="caption">{email}</Typography>
                             </Stack>
-                            <IconButton
-                                size="large"
-                                edge="start"
-                                color="inherit"
-                                aria-label="menu"
-                                sx={{ mr: 2 }}
+                            <Avatar
+                                alt={name}
+                                src={profilePhoto}
+                                sx={{ m: 1, bgcolor: 'secondary.main' }}
                                 onClick={toggleUserDrawer(true)}
-                            >
-                                <AccountCircle />
-                            </IconButton>
+                            />
                         </Toolbar>
                     </AppBar>
                     <Toolbar />

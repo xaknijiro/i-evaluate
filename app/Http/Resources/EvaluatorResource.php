@@ -22,6 +22,7 @@ class EvaluatorResource extends JsonResource
                 in_array('evaluatee', $request->input('with', [])),
                 [
                     'id' => $this->evaluatee->id,
+                    'user_id' => $this->evaluatee->user->id,
                     'institution_id' => $this->evaluatee->user->institution_id,
                     'first_name' => $this->evaluatee->user->first_name,
                     'last_name' => $this->evaluatee->user->last_name,

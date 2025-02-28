@@ -79,9 +79,11 @@ const List = ({ errors, users }) => {
             flex: 1,
             headerName: 'Department',
             sortable: false,
-            valueGetter: (cell) => cell.row.department
-                ? `${cell.row.department.code} - ${cell.row.department.title}`
-                : '-',
+            valueGetter: (department) => {
+                return department
+                    ? `${department.code} - ${department.title}`
+                    : '-'
+            },
         },
     ];
 
