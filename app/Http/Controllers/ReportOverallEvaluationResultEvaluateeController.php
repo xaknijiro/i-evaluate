@@ -7,8 +7,11 @@ use App\Http\Resources\EvaluateeOverallEvaluationResultResource;
 use App\Services\DepartmentService;
 use App\Services\EvaluationScheduleService;
 use App\Services\SemesterService;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Inertia\Inertia;
+use Intervention\Image\Laravel\Facades\Image;
 
 class ReportOverallEvaluationResultEvaluateeController extends Controller
 {
@@ -28,6 +31,13 @@ class ReportOverallEvaluationResultEvaluateeController extends Controller
         $evaluatees = $this->evaluationScheduleService->getEvaluateesByAcademicYearAndSemester($academicYear, $semesterId, $filters, $perPage);
         $semester = $this->semesterService->getSemesterById($semesterId);
 
+        try {
+            $filePath = storage_path("logos/logo-kcp-report-header.jpg");
+            $reportHeader = Image::read(File::get($filePath))->toJpeg()->toDataUri();
+        } catch (Exception $e) {
+            $reportHeader = null;
+        }
+
         return Inertia::render('Report/OverallEvaluationResult/Evaluatee/List', [
             'academic_year' => $academicYear,
             'semester_id' => $semesterId,
@@ -35,6 +45,7 @@ class ReportOverallEvaluationResultEvaluateeController extends Controller
             'filters' => $filters,
             'departments' => DepartmentResource::collection($this->departmentService->getDepartments()),
             'evaluatees' => EvaluateeOverallEvaluationResultResource::collection($evaluatees),
+            'reportHeader' => $reportHeader,
         ]);
     }
 }

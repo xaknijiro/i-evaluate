@@ -1,25 +1,56 @@
-import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
+import { DataGrid, GridToolbarContainer, GridToolbarExport } from "@mui/x-data-grid";
 import MainLayout from "../../../../MainLayout";
-import { FormControl, InputLabel, Link, MenuItem, Paper, Select, TextField, Typography } from "@mui/material";
-import { Event, FolderOpen, HourglassBottomTwoTone } from "@mui/icons-material";
-import React from 'react';
+import { Box, Button, Divider, FormControl, InputLabel, MenuItem, Paper, Select, TextField, Typography } from "@mui/material";
+import { Event, HourglassBottomTwoTone, PictureAsPdf } from "@mui/icons-material";
+import React, { useRef } from 'react';
 import { router, usePage } from "@inertiajs/react";
-import { PieChart } from "@mui/x-charts";
 import { includes } from "lodash";
+import generatePDF, { Margin } from "react-to-pdf";
 
-const List = ({ academic_year: academicYear, semester_id: semesterId, semester, filters, departments, evaluatees }) => {
+const CustomToolbar = (semester, academicYear, department, targetRefOverallEvaluationResultToPdf) => <GridToolbarContainer>
+    <GridToolbarExport
+        csvOptions={{
+            fileName: `${semester} ${academicYear} Overall Evaluation Results ${department ? department.code : 'All Departments'}`.replaceAll(' ', '_').toLowerCase(),
+        }}
+        printOptions={{
+            disableToolbarButton: true
+        }}
+    />
+    <Button
+        startIcon={<PictureAsPdf />}
+        onClick={async () => {
+            document.getElementsByClassName('MuiDataGrid-toolbarContainer')[0].remove();
+            await generatePDF(targetRefOverallEvaluationResultToPdf, {
+                filename:  `${semester} ${academicYear} Overall Evaluation Results ${department ? department.code : 'All Departments'}`.replaceAll(' ', '_').toLowerCase() + '.pdf',
+                page: {
+                    margin: Margin.SMALL,
+                    orientation: 'landscape',
+                }
+            });
+            window.location.reload();
+        }}
+    >
+        PDF
+    </Button>
+</GridToolbarContainer>;
+
+const List = ({ academic_year: academicYear, semester_id: semesterId, semester, filters, departments, evaluatees, reportHeader }) => {
     const { auth } = usePage().props;
     const { roles } = auth;
 
+    const targetRefOverallEvaluationResultToPdf = useRef();
+
     const targetRefQuickSearch = React.useRef();
-    const targetRefFiltersDepartment = React.useRef();
+
+    const [selectedDepartment, setSelectedDepartment] = React.useState(filters.department
+        ? departments.data.find(department => department.id == filters.department) : 0);
 
     const [paginationModel, setPaginationModel] = React.useState({
-        page: evaluatees.meta.current_page - 1,
-        pageSize: evaluatees.meta.per_page,
+        page: evaluatees?.meta ? evaluatees.meta.current_page - 1 : 0,
+        pageSize: evaluatees?.meta?.per_page || -1,
     });
 
-    const rowCountRef = React.useRef(evaluatees?.meta?.total || 0);
+    const rowCountRef = React.useRef(evaluatees?.meta?.total || evaluatees.data.length || 0);
 
     const rowCount = React.useMemo(() => {
         if (evaluatees?.meta?.total !== undefined) {
@@ -67,6 +98,9 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, semester, 
                 const { value: department } = cell;
                 return department?.code;
             },
+            valueGetter: (department) => {
+                return department?.code;
+            }
         },
         {
             field: 'student-to-teacher-evaluation',
@@ -77,6 +111,12 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, semester, 
                 const { evaluation_results } = row;
                 const evaluationResult = evaluation_results.find(evaluationResult => evaluationResult.evaluation_type.code === field);
                 return evaluationResult?.weighted_rating?.toFixed(2) ?? <HourglassBottomTwoTone />;
+            },
+            valueGetter: (_cell, row, definitions) => {
+                const { field } = definitions;
+                const { evaluation_results } = row;
+                const evaluationResult = evaluation_results.find(evaluationResult => evaluationResult.evaluation_type.code === field);
+                return evaluationResult?.weighted_rating?.toFixed(2) ?? '';
             },
         },
         {
@@ -89,6 +129,12 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, semester, 
                 const evaluationResult = evaluation_results.find(evaluationResult => evaluationResult.evaluation_type.code === field);
                 return evaluationResult?.weighted_rating?.toFixed(2) ?? <HourglassBottomTwoTone />;
             },
+            valueGetter: (_cell, row, definitions) => {
+                const { field } = definitions;
+                const { evaluation_results } = row;
+                const evaluationResult = evaluation_results.find(evaluationResult => evaluationResult.evaluation_type.code === field);
+                return evaluationResult?.weighted_rating?.toFixed(2) ?? '';
+            },
         },
         {
             field: 'dean-to-teacher-evaluation',
@@ -100,6 +146,12 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, semester, 
                 const evaluationResult = evaluation_results.find(evaluationResult => evaluationResult.evaluation_type.code === field);
                 return evaluationResult?.weighted_rating?.toFixed(2) ?? <HourglassBottomTwoTone />;
             },
+            valueGetter: (_cell, row, definitions) => {
+                const { field } = definitions;
+                const { evaluation_results } = row;
+                const evaluationResult = evaluation_results.find(evaluationResult => evaluationResult.evaluation_type.code === field);
+                return evaluationResult?.weighted_rating?.toFixed(2) ?? '';
+            },
         },
         {
             field: 'self-evaluation',
@@ -110,6 +162,12 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, semester, 
                 const { evaluation_results } = row;
                 const evaluationResult = evaluation_results.find(evaluationResult => evaluationResult.evaluation_type.code === field);
                 return evaluationResult?.weighted_rating?.toFixed(2) ?? <HourglassBottomTwoTone />;
+            },
+            valueGetter: (_cell, row, definitions) => {
+                const { field } = definitions;
+                const { evaluation_results } = row;
+                const evaluationResult = evaluation_results.find(evaluationResult => evaluationResult.evaluation_type.code === field);
+                return evaluationResult?.weighted_rating?.toFixed(2) ?? '';
             },
         },
         {
@@ -179,8 +237,7 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, semester, 
                     <Select
                         labelId="demo-select-small-label"
                         id="demo-select-small"
-                        defaultValue={filters?.department || 0}
-                        inputRef={targetRefFiltersDepartment}
+                        defaultValue={selectedDepartment ? selectedDepartment.id : 0}
                         label="Department"
                         onChange={(_event, item) => {
                             const { props } = item;
@@ -188,30 +245,52 @@ const List = ({ academic_year: academicYear, semester_id: semesterId, semester, 
                             const queryParams = new URLSearchParams(window.location.search);
                             queryParams.delete('page');
                             queryParams.set('department', value);
+
                             router.get(
                                 `/reports/overall-evaluation-results/${academicYear}/${semesterId}/evaluatees?${queryParams.toString()}`,
                                 {},
-                                { preserveScroll: true }
+                                {
+                                    onSuccess: () => setSelectedDepartment(departments.data.find(department => department.id === value) ?? null),
+                                    preserveScroll: true
+                                }
                             );
                         }}
                     >
                         <MenuItem value={0}><em>All</em></MenuItem>
-                        {departments.data.map((department) => <MenuItem value={department.id}>({department.code}) {department.title}</MenuItem>)}
+                        {departments.data.map((department) => <MenuItem key={department.id} value={department.id}>({department.code}) {department.title}</MenuItem>)}
                     </Select>
                 </FormControl>
             </Paper>}
 
-            <DataGrid
-                columns={columns}
-                density="compact"
-                filterMode="server"
-                onPaginationModelChange={handlePaginationChange}
-                pageSizeOptions={[5, 10, 15]}
-                paginationMode="server"
-                paginationModel={paginationModel}
-                rowCount={rowCount}
-                rows={evaluatees.data}
-            />
+            <div ref={targetRefOverallEvaluationResultToPdf}>
+                <Box marginBottom={2} textAlign="center">
+                    <img src={reportHeader} width="50%" />
+                    <Divider sx={{ my: 2 }} />
+                    <Typography>
+                        {semester} A.Y. {academicYear} Overall Evaluation Results | {selectedDepartment ? `(${selectedDepartment.code}) ${selectedDepartment.title}` : 'All Departments'}
+                    </Typography>
+                </Box>
+
+                <DataGrid
+                    columns={columns}
+                    density="compact"
+                    filterMode="server"
+                    onPaginationModelChange={handlePaginationChange}
+                    pageSizeOptions={[5, 10, 15, { label: 'All', value: -1 }]}
+                    paginationMode="server"
+                    paginationModel={paginationModel}
+                    rowCount={rowCount}
+                    rows={evaluatees.data}
+                    slots={{ toolbar: () => CustomToolbar(
+                        semester,
+                        academicYear,
+                        selectedDepartment,
+                        targetRefOverallEvaluationResultToPdf
+                    ) }}
+                    disableColumnMenu
+                />
+            </div>
+
         </>
     );
 };

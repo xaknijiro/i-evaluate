@@ -36,9 +36,6 @@ const List = ({ errors, users }) => {
         return rowCountRef.current;
     }, [users?.meta?.total]);
 
-    console.log(paginationModel);
-    console.log(rowCount);
-
     const handlePaginationChange = (newPaginationModel) => {
         router.get('/users', {
             page: newPaginationModel.page + 1,

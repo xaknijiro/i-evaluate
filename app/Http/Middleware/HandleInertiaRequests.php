@@ -42,6 +42,7 @@ class HandleInertiaRequests extends Middleware
         request()->user()?->tokens()->delete();
 
         $profilePhoto = null;
+        $reportHeader = null;
         if (Auth::user()) {
             $institutionId = Auth::user()->institution_id;
             try {
@@ -49,6 +50,12 @@ class HandleInertiaRequests extends Middleware
                 $profilePhoto = Image::read(File::get($filePath))->toJpeg()->toDataUri();
             } catch (Exception $e) {
                 $profilePhoto = null;
+            }
+            try {
+                $filePath = storage_path("logos/logo-kcp-report-header.jpg");
+                $reportHeader = Image::read(File::get($filePath))->toJpeg()->toDataUri();
+            } catch (Exception $e) {
+                $reportHeader = null;
             }
         }
 
@@ -61,6 +68,7 @@ class HandleInertiaRequests extends Middleware
                 'profile_photo' => $profilePhoto,
                 'roles' => Auth::user()->roles->pluck('name'),
                 'token' => request()->user()?->createToken('i-evaluate')->plainTextToken,
+                'reportHeader' => $reportHeader,
             ] : null,
             'flashMessage' => $request->session()->get('i-evaluate-flash-message'),
         ]);

@@ -5,6 +5,8 @@ while true; do
   echo '[2] Start application (clear volumes)';
   echo '[3] Stop application';
   echo '[4] Get into workspace';
+  echo '[5] Run migrations';
+  echo '[6] Run assets (hot reload)';
   echo 'E[x]it';
   read -p 'Option: ' option
   case $option in
@@ -14,7 +16,7 @@ while true; do
       docker-compose exec workspace bash -c "ncu && ncu -u"
       docker-compose exec workspace bash -c "npm update"
       docker-compose exec workspace bash -c "npm audit fix"
-      docker-compose exec workspace bash -c "npm run dev"
+      docker-compose exec workspace bash -c "npm run build"
       break;;
     2 )
       docker-compose down -v && docker-compose up -d
@@ -22,13 +24,19 @@ while true; do
       docker-compose exec workspace bash -c "ncu && ncu -u"
       docker-compose exec workspace bash -c "npm update"
       docker-compose exec workspace bash -c "npm audit fix"
-      docker-compose exec workspace bash -c "npm run dev"
+      docker-compose exec workspace bash -c "npm run build"
       break;;
     3 )
       docker-compose down
       break;;
     4 )
       docker-compose exec workspace bash
+      break;;
+    5 )
+      docker-compose exec workspace bash -c "php artisan migrate"
+      break;;
+    6 )
+      docker-compose exec workspace bash -c "npm run dev"
       break;;
     [Xx] )
       exit;;

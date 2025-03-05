@@ -1,7 +1,8 @@
 import Container from '@mui/material/Container';
 import { Accordion, AccordionDetails, AccordionSummary, AppBar, Box, Chip, Dialog, Divider, Grid, IconButton, Paper, Rating, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, Toolbar, Typography } from '@mui/material';
-import { Apartment, CardMembership, Close, Email, PersonPin } from '@mui/icons-material';
+import { Apartment, CardMembership, Close, Email, PersonPin, PictureAsPdf } from '@mui/icons-material';
 import { find } from 'lodash';
+import generatePDF, { Margin } from 'react-to-pdf';
 
 export default function EvaluationResultDialog({
     evaluationSchedule,
@@ -9,6 +10,8 @@ export default function EvaluationResultDialog({
     likertScaleLegend,
     onClose,
     roles,
+    reportHeader,
+    evaluationResultExportToPdf,
 }) {
     const {
         academic_year: academicYear,
@@ -20,8 +23,6 @@ export default function EvaluationResultDialog({
     const { likert_scale: likertScale } = evaluationForm || {};
     const { default_options: options } = likertScale || {};
 
-    console.log(evaluatee);
-    
     const {
         department: evaluateeDepartment,
         email: evaluateeEmail,
@@ -62,113 +63,127 @@ export default function EvaluationResultDialog({
                 <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
                     {evaluationType.title} Result
                 </Typography>
+                <IconButton color="inherit" onClick={() => generatePDF(evaluationResultExportToPdf, {
+                    filename: `${evaluateeInstitutionId}-${evaluationType.code}.pdf`,
+                    page: {
+                        margin: Margin.MEDIUM,
+                    }
+                })}>
+                    <PictureAsPdf />
+                </IconButton>
             </Toolbar>
         </AppBar>
         <Container sx={{ mt: 12, mb: 4 }}>
-            <Box sx={{ p: 2 }}>
-                <Typography
-                    variant="h4"
-                    textAlign="center"
+            <Box ref={evaluationResultExportToPdf}>
+                <Box sx={{ p: 2 }}>
+                    <Box textAlign="center">
+                        <img src={reportHeader} width="50%" />
+                        <Divider sx={{ my: 2 }} />
+                        <Typography
+                            variant="h4"
+                            textAlign="center"
 
-                >
-                    {evaluationType.title} Result
-                </Typography>
-                <Typography
-                    gutterBottom
-                    variant="subtitle1"
-                    textAlign="center"
-                >
-                    {semester} A.Y. {academicYear}
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
+                        >
+                            {evaluationType.title} Result
+                        </Typography>
+                        <Typography
+                            gutterBottom
+                            variant="subtitle1"
+                            textAlign="center"
+                        >
+                            {semester} A.Y. {academicYear}
+                        </Typography>
+                        <Divider sx={{ mb: 2 }} />
+                    </Box>
 
-                <Grid container spacing={1}>
-                    <Grid item md={6}>
-                        <Paper variant="outlined" sx={{ mb: 2, p: 2 }}>
-                            <Stack direction="row" spacing={1} alignItems="center" marginBottom={2}>
-                                <PersonPin />
-                                <Typography variant="h5" display="inline">{evaluateeFullName}</Typography>
-                            </Stack>
-                            <Stack spacing={1}>
-                                <Chip color="primary" icon={<CardMembership />} label={evaluateeInstitutionId} />
-                                <Chip color="default" icon={<Apartment />} label={evaluateeDepartment?.title} />
-                                <Chip color="default" icon={<Email />} label={evaluateeEmail} />
-                            </Stack>
-                        </Paper>
+                    <Grid container spacing={1}>
+                        <Grid item md={6}>
+                            <Paper variant="outlined" sx={{ mb: 2, p: 2 }}>
+                                <Stack direction="row" spacing={1} alignItems="center" marginBottom={2}>
+                                    <PersonPin />
+                                    <Typography variant="h5" display="inline">{evaluateeFullName}</Typography>
+                                </Stack>
+                                <Stack spacing={1}>
+                                    <Chip color="primary" icon={<CardMembership />} label={evaluateeInstitutionId} />
+                                    <Chip color="default" icon={<Apartment />} label={evaluateeDepartment?.title} />
+                                    <Chip color="default" icon={<Email />} label={evaluateeEmail} />
+                                </Stack>
+                            </Paper>
+                        </Grid>
                     </Grid>
-                </Grid>
 
-                <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
-                    <Table size="small">
-                        <caption style={{ captionSide: "top", textAlign: "center" }}>
-                            {evaluationType.title} Result Summary
-                            <Divider sx={{ my: 1 }} />
-                        </caption>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Criterion</TableCell>
-                                <TableCell align="center">Rating</TableCell>
-                                <TableCell align="center">Weight</TableCell>
-                                <TableCell align="center">Weighted Rating</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {evaluationForm.criteria.filter((criterion) => criterion.is_weighted).map((criterion) => {
-                                const { details } = evaluationResultDetails || {};
-                                const { criteria } = details || [];
-                                const criterionResult = find(criteria, { id: criterion.id });
-                                return <TableRow key={criterion.id}>
-                                    <TableCell width="60%">{criterion.description}</TableCell>
-                                    <TableCell align="center">{criterionResult?.rating.toFixed(2) || 0}</TableCell>
-                                    <TableCell align="center">{criterion.weight * 100}%</TableCell>
-                                    <TableCell align="center">{criterionResult?.weighted_rating.toFixed(2) || 0}</TableCell>
-                                </TableRow>;
-                            })}
-                        </TableBody>
-                        <TableFooter>
-                            <TableRow>
-                                <TableCell align="right" colSpan={3}>Overall Rating</TableCell>
-                                <TableCell align="center">
-                                    {evaluationResultDetails?.details?.overall_rating.toFixed(2) || 0} ({evaluationResultDetails?.details?.percentile_equivalent || 0}%)
-                                    ({evaluationResultDetails?.details?.descriptive_equivalent || ''})<br />
-                                    <Rating
-                                        precision={0.1}
-                                        value={evaluationResultDetails?.details?.overall_rating.toFixed(2) || 0}
-                                        size="small"
-                                        readOnly />
-                                </TableCell>
-                            </TableRow>
-                        </TableFooter>
-                    </Table>
-                </TableContainer>
+                    <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
+                        <Table size="small">
+                            <caption style={{ captionSide: "top", textAlign: "center" }}>
+                                {evaluationType.title} Result Summary
+                                <Divider sx={{ my: 1 }} />
+                            </caption>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Criterion</TableCell>
+                                    <TableCell align="center">Rating</TableCell>
+                                    <TableCell align="center">Weight</TableCell>
+                                    <TableCell align="center">Weighted Rating</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {evaluationForm.criteria.filter((criterion) => criterion.is_weighted).map((criterion) => {
+                                    const { details } = evaluationResultDetails || {};
+                                    const { criteria } = details || [];
+                                    const criterionResult = find(criteria, { id: criterion.id });
+                                    return <TableRow key={criterion.id}>
+                                        <TableCell width="60%">{criterion.description}</TableCell>
+                                        <TableCell align="center">{criterionResult?.rating.toFixed(2) || 0}</TableCell>
+                                        <TableCell align="center">{criterion.weight * 100}%</TableCell>
+                                        <TableCell align="center">{criterionResult?.weighted_rating.toFixed(2) || 0}</TableCell>
+                                    </TableRow>;
+                                })}
+                            </TableBody>
+                            <TableFooter>
+                                <TableRow>
+                                    <TableCell align="right" colSpan={3}>Overall Rating</TableCell>
+                                    <TableCell align="center">
+                                        {evaluationResultDetails?.details?.overall_rating.toFixed(2) || 0} ({evaluationResultDetails?.details?.percentile_equivalent || 0}%)
+                                        ({evaluationResultDetails?.details?.descriptive_equivalent || ''})<br />
+                                        <Rating
+                                            precision={0.1}
+                                            value={Number(evaluationResultDetails?.details?.overall_rating.toFixed(2)) || 0}
+                                            size="small"
+                                            readOnly />
+                                    </TableCell>
+                                </TableRow>
+                            </TableFooter>
+                        </Table>
+                    </TableContainer>
 
-                <Box sx={{ mb: 2 }}>{likertScaleLegend()}</Box>
+                    <Box sx={{ mb: 2 }}>{likertScaleLegend()}</Box>
 
-                {evaluationForm.criteria.filter((criterion) => !criterion.is_weighted).map((criterion) => {
-                    const { details } = evaluationResultDetails || {};
-                    const { criteria } = details || [];
-                    const criterionResult = find(criteria, { id: criterion.id });
+                    {evaluationForm.criteria.filter((criterion) => !criterion.is_weighted).map((criterion) => {
+                        const { details } = evaluationResultDetails || {};
+                        const { criteria } = details || [];
+                        const criterionResult = find(criteria, { id: criterion.id });
 
-                    return <Accordion expanded key={criterion.id} variant="outlined">
-                        <AccordionSummary>
-                            <Typography flex={1} variant="h6">{criterion.description}</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            {criterion.indicators.map((indicator, index) => {
-                                const { indicators: indicatorsResult } = criterionResult || {};
-                                const indicatorResult = find(indicatorsResult, { id: indicator.id });
-                                const { tally } = indicatorResult || [];
-                                const { comments } = tally[0] || [];
+                        return <Accordion expanded key={criterion.id} variant="outlined">
+                            <AccordionSummary>
+                                <Typography flex={1} variant="h6">{criterion.description}</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                {criterion.indicators.map((indicator, index) => {
+                                    const { indicators: indicatorsResult } = criterionResult || {};
+                                    const indicatorResult = find(indicatorsResult, { id: indicator.id });
+                                    const { tally } = indicatorResult || [];
+                                    const { comments } = tally[0] || [];
 
-                                return <Box key={indicator.id} sx={{ mb: 2 }}>
-                                    <Typography sx={{ mb: 2 }}>{index + 1}. {indicator.description}</Typography>
-                                    <Typography><div style={{ whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: comments }}></div></Typography>
-                                </Box>;
-                            })}
-                        </AccordionDetails>
-                    </Accordion>;
-                })}
-                
+                                    return <Box key={indicator.id} sx={{ mb: 2 }}>
+                                        <Typography sx={{ mb: 2 }}>{index + 1}. {indicator.description}</Typography>
+                                        <Typography><div style={{ whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: comments }}></div></Typography>
+                                    </Box>;
+                                })}
+                            </AccordionDetails>
+                        </Accordion>;
+                    })}
+
+                </Box>
             </Box>
         </Container>
     </Dialog>;

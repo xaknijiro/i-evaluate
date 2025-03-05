@@ -2,10 +2,29 @@ import * as React from 'react';
 import Container from '@mui/material/Container';
 import { Head, router } from '@inertiajs/react';
 import { Alert, AppBar, Avatar, Box, Button, Chip, createTheme, Divider, Paper, Rating, Stack, TextField, Toolbar, Typography } from '@mui/material';
-import { AccountCircle, DateRange, Password, School, Subject } from '@mui/icons-material';
+import { Apartment, CardMembership, DateRange, Event, Password, School, Subject } from '@mui/icons-material';
 import { ThemeProvider } from '@emotion/react';
 
-export default function Show({ errors, id, code, subject, academicYear, semester, course, yearLevel, assignedTo, evaluationType, evaluationForm, profilePhoto }) {
+export default function Show({
+    errors,
+    id,
+    code,
+    // evaluatee
+    institutionId,
+    profilePhoto,
+    assignedTo,
+    evaluateeDepartment,
+    // subject class
+    academicYear,
+    semester,
+    subject,
+    schedule,
+    course,
+    yearLevel,
+    // evaluation references
+    evaluationType,
+    evaluationForm,
+}) {
     const theme = createTheme({
         palette: {
             mode: 'light',
@@ -44,20 +63,36 @@ export default function Show({ errors, id, code, subject, academicYear, semester
             <React.Fragment>
                 <AppBar position="fixed">
                     <Toolbar>
-                        <Avatar src={profilePhoto} sx={{ height: 100, width: 100 }}/>    
+                        <Avatar src={profilePhoto} sx={{ height: 150, width: 150, m: 2 }}/>    
                         <Box padding={2}>
-                            <Stack alignItems="center" direction="row" marginBottom={2} spacing={1}>
+                            <Stack alignItems="center" direction="row" marginBottom={1} spacing={1}>
                                 <Typography component="h1" variant="h5">
                                     {assignedTo}
                                 </Typography>
                             </Stack>
-                            <Stack direction="row" divider={<Divider orientation="vertical" />} spacing={1}>
-                                <Chip icon={<Password />} label={code} color="success" />
-                                <Chip icon={<Subject />} label={`${subject.code} - ${subject.title}`} color="default" />
-                                <Chip icon={<School />} label={`(${course.code} - ${yearLevel})`} color="secondary" />
-                                <Chip icon={<DateRange />} label={`${academicYear} - ${semester}`} color="warning" />
+                            <Stack direction="row" marginBottom={1} spacing={1}>
+                                <Chip icon={<CardMembership />} label={institutionId} color="error" />
+                                <Chip icon={<Apartment />} label={`${evaluateeDepartment.code} - ${evaluateeDepartment.title}`} color="secondary" />
                             </Stack>
+                            
                         </Box>
+                        <Paper sx={{ bgcolor: 'warning.light',  p: 2 }}>
+                            <Stack alignItems="center" direction="row" marginBottom={1} spacing={1}>
+                                <Typography component="h1" variant="h5">
+                                    Subject Class
+                                </Typography>
+                            </Stack>
+                            <Divider sx={{ my: 1 }}/>
+                            <Stack direction="row" marginBottom={1} spacing={1}>
+                                <Chip icon={<Password />} label={code} color="success" />
+                                <Chip icon={<DateRange />} label={`${academicYear} - ${semester}`} color="warning" />
+                                <Chip icon={<Subject />} label={`${subject.code} - ${subject.title}`} color="error" />
+                            </Stack>
+                            <Stack direction="row" spacing={1}>
+                                <Chip icon={<Event />} label={schedule} color="info" />
+                                <Chip icon={<School />} label={`(${course.code} - ${yearLevel})`} color="secondary" />
+                            </Stack>
+                        </Paper>
                     </Toolbar>
                 </AppBar>
                 <Toolbar />
@@ -68,7 +103,7 @@ export default function Show({ errors, id, code, subject, academicYear, semester
                 </Head>
                 <Paper
                     sx={{
-                        marginTop: 8,
+                        marginTop: 16,
                         marginBottom: 4,
                         padding: 2,
                         display: 'flex',

@@ -56,17 +56,33 @@ class EvaluationScheduleSubjectClassController extends Controller
         $course = $subjectClass->course->only(['code', 'title']);
         $yearLevel = $subjectClass->year_level;
         $assignedTo = $subjectClass->assignedTo->name;
+        $evaluateeDepartment = $subjectClass->assignedTo->departments->first();
         $evaluatorEmail = $request->session()->get('evaluator_email');
+
+        $institutionId = $subjectClass->assignedTo->institution_id;
+        try {
+            $filePath = storage_path("profile_photos/$institutionId.jpg");
+            $profilePhoto = Image::read(File::get($filePath))->toJpeg()->toDataUri();
+        } catch (Exception $e) {
+            $profilePhoto = null;
+        }
 
         return Inertia::render('Evaluate/ScheduledSubject/Index', [
             'id' => $id,
             'code' => $code,
-            'subject' => $subject,
+            // evaluatee
+            'profilePhoto' => $profilePhoto,
+            'institutionId' => $institutionId,
+            'assignedTo' => $assignedTo,
+            'evaluateeDepartment' => $evaluateeDepartment,
+            // subject class
             'academicYear' => $academicYear,
             'semester' => $semester,
+            'subject' => $subject,
+            'schedule' => $subjectClass->schedule,
             'course' => $course,
             'yearLevel' => $yearLevel,
-            'assignedTo' => $assignedTo,
+            // evaluator
             'evaluatorEmail' => $evaluatorEmail,
         ]);
     }
@@ -112,6 +128,7 @@ class EvaluationScheduleSubjectClassController extends Controller
         $course = $subjectClass->course->only(['code', 'title']);
         $yearLevel = $subjectClass->year_level;
         $assignedTo = $subjectClass->assignedTo->name;
+        $evaluateeDepartment = $subjectClass->assignedTo->departments->first();
         $evaluationType = $evaluationPasscode->evaluationScheduleSubjectClass->evaluationSchedule->evaluationType->title;
         $evaluationForm = $evaluationPasscode->evaluationScheduleSubjectClass->evaluationSchedule->evaluationForm;
 
@@ -126,15 +143,21 @@ class EvaluationScheduleSubjectClassController extends Controller
         return Inertia::render('Evaluate/ScheduledSubject/Show', [
             'id' => $id,
             'code' => $code,
-            'subject' => $subject,
+            // evaluatee
+            'profilePhoto' => $profilePhoto,
+            'institutionId' => $institutionId,
+            'assignedTo' => $assignedTo,
+            'evaluateeDepartment' => $evaluateeDepartment,
+            // subject class
             'academicYear' => $academicYear,
             'semester' => $semester,
+            'subject' => $subject,
+            'schedule' => $subjectClass->schedule,
             'course' => $course,
             'yearLevel' => $yearLevel,
-            'assignedTo' => $assignedTo,
+            // evaluation references
             'evaluationType' => $evaluationType,
             'evaluationForm' => $evaluationForm,
-            'profilePhoto' => $profilePhoto,
         ]);
     }
 

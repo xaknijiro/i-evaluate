@@ -393,9 +393,12 @@ class EvaluationScheduleService
             });
         });
 
-        return $query
-            ->orderBy('last_name')
-            ->orderBy('first_name')
-            ->paginate($perPage);
+        $query = $query->orderBy('last_name')->orderBy('first_name');
+
+        if ($perPage > 0) {
+            return $query->paginate($perPage);
+        }
+
+        return $query->get();   
     }
 }
