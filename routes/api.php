@@ -316,13 +316,18 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
                     ->groupBy('gender')
                     ->get();
 
-                return $result->map(function ($item) {
-                    return [
-                        'id' => $item->gender,
-                        'label' => $item->gender,
-                        'value' => $item->total,
-                    ];
-                });
+                return [
+                    'chartData' => $result->map(function ($item) {
+                        return [
+                            'id' => $item->gender,
+                            'label' => $item->gender,
+                            'value' => $item->total,
+                        ];
+                    })->values(),
+                    'colors' => $result->map(function ($item) {
+                        return $item->gender == 'Male' ? '#2196F3' : '#E91E63';
+                    })->values()
+                ];
             });
         });
     });

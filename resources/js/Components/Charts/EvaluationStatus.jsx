@@ -236,6 +236,7 @@ export default function EvaluationStatus() {
                                     <Grid2 item size={{ xl: 6, lg: 6, md: 12, sm: 12, xs: 12 }}>
                                         <PieChart
                                             height={175}
+                                            colors={['green', 'red']}
                                             series={[
                                                 {
                                                     data: statuses ?? [],
@@ -251,6 +252,7 @@ export default function EvaluationStatus() {
                                         <BarChart
                                             dataset={statusesByDepartmentDataset}
                                             height={175}
+                                            colors={['green', 'red']}
                                             xAxis={[
                                                 {
                                                     scaleType: 'band',
@@ -273,6 +275,7 @@ export default function EvaluationStatus() {
                                     <Grid2 item size={{ xl: 6, lg: 6, md: 12, sm: 12, xs: 12 }}>
                                         <PieChart
                                             height={175}
+                                            colors={['red', 'green']}
                                             series={[
                                                 {
                                                     data: respondents ?? [],
@@ -288,6 +291,7 @@ export default function EvaluationStatus() {
                                         <BarChart
                                             dataset={respondentsByDepartmentDataset}
                                             height={175}
+                                            colors={['red', 'green']}
                                             xAxis={[
                                                 {
                                                     scaleType: 'band',

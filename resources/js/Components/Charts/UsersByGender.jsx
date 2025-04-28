@@ -10,6 +10,7 @@ export default function UsersByGender() {
 
     const [isLoading, setIsLoading] = React.useState(true);
     const [data, setData] = React.useState([]);
+    const [colors, setColors] = React.useState([]);
 
     React.useEffect(() => {
         async function fetchData() {
@@ -18,8 +19,10 @@ export default function UsersByGender() {
                     Authorization: `Bearer ${token}`
                 },
             });
+            const { chartData, colors } = response.data;
             setIsLoading(false);
-            setData(response.data);   
+            setData(chartData);
+            setColors(colors);
         }
 
         fetchData();
@@ -28,6 +31,7 @@ export default function UsersByGender() {
     return <Paper sx={{ p: 2 }}>
         {!isLoading && <PieChart
             height={175}
+            colors={colors}
             series={[
                 {
                     data,

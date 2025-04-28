@@ -13,16 +13,16 @@ while true; do
     1 )
       docker-compose down && docker-compose up -d
       docker-compose exec workspace bash -c "composer update -o"
-      docker-compose exec workspace bash -c "ncu && ncu -u"
-      docker-compose exec workspace bash -c "npm update"
+      # docker-compose exec workspace bash -c "ncu && ncu -u"
+      # docker-compose exec workspace bash -c "npm update"
       docker-compose exec workspace bash -c "npm audit fix"
       docker-compose exec workspace bash -c "npm run build"
       break;;
     2 )
       docker-compose down -v && docker-compose up -d
       docker-compose exec workspace bash -c "composer update -o"
-      docker-compose exec workspace bash -c "ncu && ncu -u"
-      docker-compose exec workspace bash -c "npm update"
+      # docker-compose exec workspace bash -c "ncu && ncu -u"
+      # docker-compose exec workspace bash -c "npm update"
       docker-compose exec workspace bash -c "npm audit fix"
       docker-compose exec workspace bash -c "npm run build"
       break;;
